@@ -55,7 +55,14 @@ class OnboardingActivity : AppCompatActivity() {
             if (viewPager.currentItem + 1 < onboardingItems.size) {
                 viewPager.currentItem += 1
             } else {
-                startActivity(Intent(this, MainActivity::class.java))
+                val intent = Intent(this, SignupActivity::class.java)
+                startActivity(intent)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
+                } else {
+                    @Suppress("DEPRECATION")
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                }
                 finish()
             }
         }
