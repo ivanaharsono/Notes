@@ -86,7 +86,8 @@ class MainActivity : AppCompatActivity() {
         dialog.setContentView(R.layout.dialog_profile)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        val btnClose = dialog.findViewById<android.widget.Button>(R.id.btnCloseProfile)
+        val btnClose = dialog.findViewById<android.widget.ImageButton>(R.id.btnCloseProfile)
+
         btnClose.setOnClickListener {
             dialog.dismiss()
         }

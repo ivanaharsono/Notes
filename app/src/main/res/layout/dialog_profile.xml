@@ -8,54 +8,56 @@
     app:cardCornerRadius="16dp"
     app:cardElevation="8dp">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center">
+        android:layout_height="wrap_content">
 
-        <ImageView
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:background="@drawable/bg_circle"
-            android:src="@drawable/ic_person"
-            app:tint="@android:color/white"
-            android:padding="20dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:fontFamily="@font/inter_bold"
-            android:text="User"
-            android:textColor="#202124"
-            android:textSize="20sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:fontFamily="@font/inter_regular"
-            android:text="Software Engineer"
-            android:textColor="#666666"
-            android:textSize="14sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginVertical="16dp"
-            android:background="#E0E0E0"/>
-
-        <Button
+        <ImageButton
             android:id="@+id/btnCloseProfile"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="#808080"
+            android:contentDescription="Tutup" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tutup"
-            android:textAllCaps="false"
-            android:backgroundTint="#F1F3F4"
-            android:textColor="#202124"
-            app:cornerRadius="8dp" />
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center">
 
-    </LinearLayout>
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_person"
+                app:tint="@android:color/white"
+                android:padding="20dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/inter_bold"
+                android:text="User"
+                android:textColor="#202124"
+                android:textSize="20sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/inter_regular"
+                android:text="Software Engineer"
+                android:textColor="#666666"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+    </RelativeLayout>
 </androidx.cardview.widget.CardView>
