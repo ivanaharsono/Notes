@@ -36,6 +36,21 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
+        <activity
+            android:name=".ArchiveActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TrashActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LabelsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HelpActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

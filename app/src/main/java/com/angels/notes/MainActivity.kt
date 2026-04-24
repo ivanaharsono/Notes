@@ -114,31 +114,28 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.nav_arsip -> {
-                    // TODO: Implementasi ArchivedActivity atau fragment arsip
-                    topAppBar.title = "Archive"
-                    Toast.makeText(this, "Opening Archive...", Toast.LENGTH_SHORT).show()
+                    val intent = android.content.Intent(this, ArchiveActivity::class.java)
+                    startActivity(intent)
                 }
 
                 R.id.nav_trash -> {
-                    // TODO: Implementasi TrashActivity atau fragment sampah
-                    topAppBar.title = "Trash"
-                    Toast.makeText(this, "Opening Trash...", Toast.LENGTH_SHORT).show()
+                    val intent = android.content.Intent(this, TrashActivity::class.java)
+                    startActivity(intent)
                 }
 
                 R.id.nav_label -> {
-                    // TODO: Implementasi LabelsActivity atau fragment label
-                    topAppBar.title = "Labels"
-                    Toast.makeText(this, "Opening Labels...", Toast.LENGTH_SHORT).show()
+                    val intent = android.content.Intent(this, LabelsActivity::class.java)
+                    startActivity(intent)
                 }
 
                 R.id.nav_settings -> {
-                    // TODO: Implementasi SettingsActivity
-                    Toast.makeText(this, "Opening Settings...", Toast.LENGTH_SHORT).show()
+                    val intent = android.content.Intent(this, SettingsActivity::class.java)
+                    startActivity(intent)
                 }
 
                 R.id.nav_help -> {
-                    // TODO: Implementasi HelpActivity atau buka URL help center
-                    Toast.makeText(this, "Help & Feedback...", Toast.LENGTH_SHORT).show()
+                    val intent = android.content.Intent(this, HelpActivity::class.java)
+                    startActivity(intent)
                 }
             }
 
