@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_dashboard"
+            android:icon="@drawable/ic_notes_logo"
+            android:title="My Notes" />
+        <item
+            android:id="@+id/nav_arsip"
+            android:icon="@drawable/ic_lock"
+            android:title="Archive" />
+        <item
+            android:id="@+id/nav_trash"
+            android:icon="@drawable/ic_back"
+            android:title="Trash" />
+        <item
+            android:id="@+id/nav_label"
+            android:icon="@drawable/ic_format"
+            android:title="Labels" />
+    </group>
+
+    <item android:title="Account and Support">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_person"
+                android:title="Settings" />
+            <item
+                android:id="@+id/nav_help"
+                android:icon="@drawable/ic_email"
+                android:title="Help &amp; Feedback" />
+        </menu>
+    </item>
+</menu>

@@ -11,10 +11,15 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // delay 3 detik terus pindah ke onboarding
+        // delay 2 detik lalu pindah ke Onboarding
         Handler(Looper.getMainLooper()).postDelayed({
-            val intent = Intent(this@SplashActivity, OnboardingActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, OnboardingActivity::class.java))
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
+            } else {
+                @Suppress("DEPRECATION")
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            }
             finish()
         }, 2000)
     }
