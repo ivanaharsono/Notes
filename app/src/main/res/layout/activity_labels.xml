@@ -6,24 +6,29 @@
     android:layout_height="match_parent"
     android:background="#F8F9FA">
 
-    <!-- Top App Bar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@android:color/white"
-        app:navigationIcon="@drawable/ic_back"
-        app:title="Labels"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:elevation="2dp" />
+        android:layout_height="wrap_content"
+        android:background="@color/IndigoBlue"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/white"
+            app:navigationIcon="@drawable/ic_back"
+            app:title="Labels"
+            app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:elevation="2dp" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="?attr/actionBarSize">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Input field untuk membuat label baru -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -52,7 +57,6 @@
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Tombol tambah label -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddLabel"
                 style="@style/Widget.MaterialComponents.Button"
@@ -66,13 +70,11 @@
                 app:cornerRadius="8dp" />
         </LinearLayout>
 
-        <!-- Divider -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#E0E0E0" />
 
-        <!-- Empty state -->
         <LinearLayout
             android:id="@+id/layoutEmpty"
             android:layout_width="match_parent"
@@ -107,7 +109,6 @@
                 android:textColor="@color/gray_text" />
         </LinearLayout>
 
-        <!-- Daftar label -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvLabels"
             android:layout_width="match_parent"

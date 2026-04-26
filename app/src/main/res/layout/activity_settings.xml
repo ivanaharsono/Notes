@@ -1,33 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#F8F9FA">
 
-    <!-- Top App Bar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@android:color/white"
-        app:navigationIcon="@drawable/ic_back"
-        app:title="Settings"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:elevation="2dp" />
+        android:layout_height="wrap_content"
+        android:background="@color/IndigoBlue"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/white"
+            app:navigationIcon="@drawable/ic_back"
+            app:title="Settings"
+            app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:elevation="2dp" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- ── SECTION: Account ── -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -41,7 +46,6 @@
                 android:textAllCaps="true"
                 android:letterSpacing="0.1" />
 
-            <!-- Item: Profile -->
             <LinearLayout
                 android:id="@+id/itemProfile"
                 android:layout_width="match_parent"
@@ -82,7 +86,6 @@
 
             <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
-            <!-- Item: Change Password -->
             <LinearLayout
                 android:id="@+id/itemChangePassword"
                 android:layout_width="match_parent"
@@ -108,7 +111,6 @@
                     android:textColor="@color/black" />
             </LinearLayout>
 
-            <!-- ── SECTION: Display ── -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -122,7 +124,6 @@
                 android:textAllCaps="true"
                 android:letterSpacing="0.1" />
 
-            <!-- Item: Dark Mode (Switch) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
@@ -152,7 +153,6 @@
 
             <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="56dp" />
 
-            <!-- Item: Note View (List / Grid) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
@@ -189,7 +189,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- ── SECTION: Notifications ── -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -203,7 +202,6 @@
                 android:textAllCaps="true"
                 android:letterSpacing="0.1" />
 
-            <!-- Item: Enable Notifications (Switch) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
@@ -232,7 +230,6 @@
                     android:checked="true" />
             </LinearLayout>
 
-            <!-- ── SECTION: About ── -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -246,7 +243,6 @@
                 android:textAllCaps="true"
                 android:letterSpacing="0.1" />
 
-            <!-- Item: App Version -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
@@ -282,7 +278,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Sign Out Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSignOut"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -301,4 +296,4 @@
 
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

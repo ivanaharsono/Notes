@@ -4,9 +4,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="#F8F9FA"> <com.google.android.material.appbar.AppBarLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/IndigoBlue"
+    android:fitsSystemWindows="true">
 
-    <!-- Top App Bar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/topAppBar"
         android:layout_width="match_parent"
@@ -16,15 +19,14 @@
         app:title="Archive"
         app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
         app:elevation="2dp" />
+</com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Konten utama -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="?attr/actionBarSize">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Empty state (tampil jika tidak ada catatan diarsip) -->
         <LinearLayout
             android:id="@+id/layoutEmpty"
             android:layout_width="match_parent"
@@ -59,7 +61,6 @@
                 android:textColor="@color/gray_text" />
         </LinearLayout>
 
-        <!-- RecyclerView daftar catatan yang diarsipkan -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvArchive"
             android:layout_width="match_parent"

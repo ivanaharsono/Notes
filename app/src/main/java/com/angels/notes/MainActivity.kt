@@ -14,6 +14,11 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 import java.util.Locale
 import androidx.activity.OnBackPressedCallback
+import android.graphics.Rect
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
+import android.content.Context
+import android.view.View
 
 class MainActivity : AppCompatActivity() {
 
@@ -56,9 +61,31 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // ─────────────────────────────────────────────
-    // FAB: buka DetailActivity untuk membuat catatan baru
-    // ─────────────────────────────────────────────
+    override fun onResume(){
+        super.onResume()
+        navView.setCheckedItem(R.id.nav_dashboard)
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            // Ambil elemen yang sedang fokus (sedang diketik)
+            val v = currentFocus
+            if (v is EditText) {
+                // Buat kotak imajiner seukuran kolom search
+                val outRect = Rect()
+                v.getGlobalVisibleRect(outRect)
+
+                // Cek apakah jari kamu ngetuk DI LUAR kotak imajiner itu
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    v.clearFocus()
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(v.windowToken, 0)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
     private fun setupFab() {
         fabAdd.setOnClickListener {
             val intent = android.content.Intent(this, DetailActivity::class.java)
@@ -66,16 +93,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // TOOLBAR: hamburger → buka drawer | profile icon → dialog
-    // ─────────────────────────────────────────────
     private fun setupToolbar() {
-        // Ketuk ikon hamburger (navigationIcon) → buka sidebar dari kiri
         topAppBar.setNavigationOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
 
-        // Ketuk ikon profil di menu toolbar → tampilkan dialog profil
         topAppBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_profile -> {
@@ -87,19 +109,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // NAVIGATION DRAWER (SIDEBAR):
-    //   Menangani klik setiap item menu di sidebar.
-    //   Sidebar ditutup otomatis setelah item dipilih.
-    //
-    //   Item yang tersedia:
-    //   - nav_dashboard : kembali ke halaman utama (daftar catatan)
-    //   - nav_arsip     : membuka halaman arsip (catatan yang diarsipkan)
-    //   - nav_trash     : membuka halaman sampah (catatan yang dihapus)
-    //   - nav_label     : membuka manajemen label / kategori catatan
-    //   - nav_settings  : membuka pengaturan aplikasi
-    //   - nav_help      : membuka halaman bantuan & umpan balik
-    // ─────────────────────────────────────────────
     private fun setupNavigationDrawer() {
         // Tandai "My Notes" sebagai item yang sedang aktif saat pertama dibuka
         navView.setCheckedItem(R.id.nav_dashboard)
@@ -145,10 +154,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    // ─────────────────────────────────────────────
-    // SEARCH: filter catatan berdasarkan judul atau isi
-    // ─────────────────────────────────────────────
     private fun setupSearch() {
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -159,9 +164,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    // ─────────────────────────────────────────────
-    // DIALOG PROFIL
-    // ─────────────────────────────────────────────
     private fun showProfileDialog() {
         val dialog = android.app.Dialog(this)
         dialog.setContentView(R.layout.dialog_profile)
@@ -172,9 +174,6 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    // ─────────────────────────────────────────────
-    // DATA & GRID
-    // ─────────────────────────────────────────────
     private fun prepareDummyData() {
         list.clear()
         list.add(Note(1, "Belanja Bulanan",  "Beli telur, susu, roti, kopi, dan sabun cuci.", "24 April"))
@@ -205,4 +204,6 @@ class MainActivity : AppCompatActivity() {
         }
         noteAdapter.filterList(filteredList)
     }
+
+
 }

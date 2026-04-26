@@ -6,25 +6,30 @@
     android:layout_height="match_parent"
     android:background="#F8F9FA">
 
-    <!-- Top App Bar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@android:color/white"
-        app:navigationIcon="@drawable/ic_back"
-        app:title="Trash"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:elevation="2dp"
-        app:menu="@menu/top_menu_trash" />
+        android:layout_height="wrap_content"
+        android:background="@color/IndigoBlue"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/white"
+            app:navigationIcon="@drawable/ic_back"
+            app:title="Trash"
+            app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:elevation="2dp"
+            app:menu="@menu/top_menu_trash" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_marginTop="?attr/actionBarSize">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Banner info: catatan di trash akan dihapus permanen setelah 30 hari -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -36,7 +41,6 @@
             android:fontFamily="@font/inter_regular"
             android:textColor="#E65100" />
 
-        <!-- Empty state -->
         <LinearLayout
             android:id="@+id/layoutEmpty"
             android:layout_width="match_parent"
@@ -71,7 +75,6 @@
                 android:textColor="@color/gray_text" />
         </LinearLayout>
 
-        <!-- RecyclerView daftar catatan di trash -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvTrash"
             android:layout_width="match_parent"

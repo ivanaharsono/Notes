@@ -8,6 +8,11 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.textfield.TextInputEditText
+import android.content.Context
+import android.graphics.Rect
+import android.view.MotionEvent
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 
 class LabelsActivity : AppCompatActivity() {
 
@@ -35,8 +40,7 @@ class LabelsActivity : AppCompatActivity() {
         setupRecyclerView()
         updateEmptyState()
 
-        // Tombol Add: tambahkan label baru ke daftar
-        findViewById<View>(R.id.btnAddLabel).setOnClickListener {
+        findViewById<View>(R.id.btnAddLabel).setOnClickListener { view ->
             val newLabel = etNewLabel.text.toString().trim()
             when {
                 newLabel.isEmpty() -> {
@@ -51,9 +55,29 @@ class LabelsActivity : AppCompatActivity() {
                     etNewLabel.text?.clear()
                     updateEmptyState()
                     Toast.makeText(this, "Label \"$newLabel\" created", Toast.LENGTH_SHORT).show()
+
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(view.windowToken, 0)
                 }
             }
         }
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val v = currentFocus
+            if (v is EditText) {
+                val outRect = Rect()
+                v.getGlobalVisibleRect(outRect)
+
+                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    v.clearFocus()
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(v.windowToken, 0)
+                }
+            }
+        }
+        return super.dispatchTouchEvent(event)
     }
 
     private fun setupRecyclerView() {

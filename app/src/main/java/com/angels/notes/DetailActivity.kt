@@ -31,13 +31,11 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var btnToggleFormat: ImageButton
     private lateinit var formatScrollView: HorizontalScrollView
 
-    // State format
     private var isBold = false
     private var isItalic = false
     private var isUnderline = false
     private var isBullet = false
 
-    // Warna untuk state aktif dan non-aktif
     private lateinit var colorActive: ColorStateList
     private lateinit var colorInactive: ColorStateList
 
@@ -45,7 +43,6 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
 
-        // Inisialisasi warna
         colorActive = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.IndigoBlue))
         colorInactive = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.gray_text))
 
@@ -55,6 +52,15 @@ class DetailActivity : AppCompatActivity() {
         setupToggleFormatting()
         setupSaveButton()
         setupTextWatcher()
+
+        val note = intent.getSerializableExtra("EXTRA_NOTE") as? Note
+
+        if (note != null) {
+            etTitle.setText(note.judul)
+            etBody.setText(note.isi)
+
+            toolbar.title = "Edit Note"
+        }
     }
 
     private fun setupViews() {
@@ -115,17 +121,14 @@ class DetailActivity : AppCompatActivity() {
         val selectionStart = etBody.selectionStart
         val selectionEnd = etBody.selectionEnd
 
-        // Jika ada teks yang dipilih, format selection
         if (selectionStart != selectionEnd) {
             applyFormattingToRange(selectionStart, selectionEnd)
         }
-        // Jika tidak ada selection, format akan diterapkan ke teks yang akan diketik
     }
 
     private fun applyFormattingToRange(start: Int, end: Int) {
         val spannable = etBody.text as Spannable
 
-        // Hapus span yang ada dulu
         val styleSpans = spannable.getSpans(start, end, StyleSpan::class.java)
         for (span in styleSpans) spannable.removeSpan(span)
 
@@ -135,7 +138,6 @@ class DetailActivity : AppCompatActivity() {
         val bullets = spannable.getSpans(start, end, BulletSpan::class.java)
         for (span in bullets) spannable.removeSpan(span)
 
-        // Terapkan format yang aktif
         if (isBold) {
             spannable.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
@@ -160,17 +162,13 @@ class DetailActivity : AppCompatActivity() {
 
                 val spannable = s as Spannable
 
-                // Hanya proses jika ada format yang aktif
                 if (!isBold && !isItalic && !isUnderline && !isBullet) return
 
-                // Ambil posisi karakter terakhir yang baru diketik
                 val length = s.length
                 if (length == 0) return
 
-                // Cek karakter terakhir (yang baru diketik)
                 val lastCharStart = length - 1
 
-                // Hapus span lama di posisi ini
                 val existingStyleSpans = spannable.getSpans(lastCharStart, length, StyleSpan::class.java)
                 for (span in existingStyleSpans) spannable.removeSpan(span)
 
@@ -180,7 +178,6 @@ class DetailActivity : AppCompatActivity() {
                 val existingBullets = spannable.getSpans(lastCharStart, length, BulletSpan::class.java)
                 for (span in existingBullets) spannable.removeSpan(span)
 
-                // Terapkan format yang aktif ke karakter baru
                 if (isBold) {
                     spannable.setSpan(StyleSpan(Typeface.BOLD), lastCharStart, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }

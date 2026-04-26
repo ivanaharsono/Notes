@@ -1,27 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    nav_header.xml
-    Layout untuk bagian atas (header) dari Sidebar / Navigation Drawer.
-
-    Header ini menampilkan:
-    - Logo / ikon aplikasi Notes
-    - Nama aplikasi
-    - Tagline singkat
-
-    Digunakan oleh NavigationView melalui atribut app:headerLayout="@layout/nav_header"
-    di dalam activity_main.xml.
--->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:paddingTop="48dp"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingBottom="24dp"
+    android:paddingTop="64dp"
     android:background="@color/IndigoBlue">
 
-    <!-- Logo Aplikasi -->
     <ImageView
         android:layout_width="56dp"
         android:layout_height="56dp"
@@ -29,7 +18,6 @@
         android:contentDescription="Notes Logo"
         app:tint="@android:color/white" />
 
-    <!-- Nama Aplikasi -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -39,7 +27,6 @@
         android:textSize="22sp"
         android:fontFamily="@font/inter_bold" />
 
-    <!-- Tagline -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

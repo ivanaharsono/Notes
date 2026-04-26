@@ -9,14 +9,12 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <!-- ===== KONTEN UTAMA ===== -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="#F8F9FA">
 
-        <!-- Top App Bar dengan hamburger icon dan profile icon -->
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
@@ -28,7 +26,6 @@
             app:menu="@menu/top_menu"
             app:elevation="2dp" />
 
-        <!-- Search Bar -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,7 +48,6 @@
                 android:fontFamily="@font/inter_regular" />
         </androidx.cardview.widget.CardView>
 
-        <!-- RecyclerView + FAB -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -61,6 +57,7 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:paddingHorizontal="8dp"
+                android:paddingBottom="88dp"
                 android:clipToPadding="false"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -83,18 +80,6 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 
-    <!-- ===== SIDEBAR / NAVIGATION DRAWER ===== -->
-    <!--
-        NavigationView secara otomatis menampilkan DrawerLayout sebagai sidebar
-        dari sisi kiri (gravity="start").
-
-        Atribut penting:
-        - app:headerLayout  : layout XML khusus header di bagian atas sidebar
-        - app:menu          : menu XML yang berisi item navigasi
-        - app:itemIconTint  : warna icon tiap item (menggunakan selector agar
-                              berubah warna saat item dipilih)
-        - app:itemTextColor : warna teks tiap item (sama dengan itemIconTint)
-    -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navView"
         android:layout_width="wrap_content"

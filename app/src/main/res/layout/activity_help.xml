@@ -1,26 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="#F8F9FA">
 
-    <!-- Top App Bar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/topAppBar"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@android:color/white"
-        app:navigationIcon="@drawable/ic_back"
-        app:title="Help &amp; Feedback"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
-        app:elevation="2dp" />
+        android:layout_height="wrap_content"
+        android:background="@color/IndigoBlue"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/white"
+            app:navigationIcon="@drawable/ic_back"
+            app:title="Help &amp; Feedback"
+            app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:elevation="2dp" />
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -28,7 +34,6 @@
             android:orientation="vertical"
             android:paddingBottom="24dp">
 
-            <!-- ── SECTION: FAQ ── -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -42,7 +47,6 @@
                 android:textAllCaps="true"
                 android:letterSpacing="0.1" />
 
-            <!-- FAQ Item 1 -->
             <LinearLayout
                 android:id="@+id/faq1"
                 android:layout_width="match_parent"
@@ -65,15 +69,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Tap the blue &quot;+&quot; button at the bottom-right of the main screen to open the note editor."
-                android:textSize="14sp"
-                android:fontFamily="@font/inter_regular"
-                android:textColor="@color/gray_text"
-                android:visibility="gone" />
+                    android:textSize="14sp"
+                    android:fontFamily="@font/inter_regular"
+                    android:textColor="@color/gray_text"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="16dp" />
 
-            <!-- FAQ Item 2 -->
             <LinearLayout
                 android:id="@+id/faq2"
                 android:layout_width="match_parent"
@@ -104,7 +107,6 @@
 
             <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="16dp" />
 
-            <!-- FAQ Item 3 -->
             <LinearLayout
                 android:id="@+id/faq3"
                 android:layout_width="match_parent"
@@ -135,7 +137,6 @@
 
             <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#E0E0E0" android:layout_marginStart="16dp" />
 
-            <!-- FAQ Item 4 -->
             <LinearLayout
                 android:id="@+id/faq4"
                 android:layout_width="match_parent"
@@ -158,13 +159,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="No. You must tap the &quot;Save&quot; button in the note editor to save your changes. If you leave without saving, changes will be lost."
-                android:textSize="14sp"
-                android:fontFamily="@font/inter_regular"
-                android:textColor="@color/gray_text"
-                android:visibility="gone" />
+                    android:textSize="14sp"
+                    android:fontFamily="@font/inter_regular"
+                    android:textColor="@color/gray_text"
+                    android:visibility="gone" />
             </LinearLayout>
 
-            <!-- ── SECTION: Send Feedback ── -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -226,7 +226,6 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- App version info di bagian bawah -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -239,4 +238,4 @@
 
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -18,6 +18,14 @@ class NoteAdapter(private var listNote: ArrayList<Note>) : RecyclerView.Adapter<
         val note = listNote[position]
         holder.tvTitle.text = note.judul
         holder.tvDesc.text = note.isi
+
+        // Tambahkan fungsi klik di sini
+        holder.itemView.setOnClickListener {
+            val intent = android.content.Intent(holder.itemView.context, DetailActivity::class.java)
+            // Memasukkan data catatan ke dalam "paket" bernama EXTRA_NOTE
+            intent.putExtra("EXTRA_NOTE", note)
+            holder.itemView.context.startActivity(intent)
+        }
     }
 
     override fun getItemCount(): Int {
