@@ -50,54 +50,45 @@
                 android:textSize="18sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <EditText
-            android:id="@+id/etBody"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="16dp"
-            android:background="@android:color/transparent"
-            android:fontFamily="@font/inter_regular"
-            android:gravity="top"
-            android:hint="Start writing..."
-            android:inputType="textMultiLine|textCapSentences"
-            android:lineSpacingExtra="4dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@+id/tilTitle"
-            app:layout_constraintBottom_toTopOf="@+id/layoutBottomControls"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
         <LinearLayout
-            android:id="@+id/layoutBottomControls"
+            android:id="@+id/layoutEditTools"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/tilTitle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
+            <ImageButton
+                android:id="@+id/btnToggleFormat"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Toggle formatting"
+                android:src="@drawable/ic_format"
+                app:tint="@color/IndigoBlue" />
+
             <HorizontalScrollView
                 android:id="@+id/formatScrollView"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_weight="1"
                 android:scrollbars="none"
                 android:visibility="gone">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="4dp">
+                    android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnBold"
                         style="@style/FormatToggleButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:checkable="true"
                         android:contentDescription="Bold"
                         app:icon="@drawable/ic_format_bold"
@@ -107,6 +98,8 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnItalic"
                         style="@style/FormatToggleButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:checkable="true"
                         android:contentDescription="Italic"
                         app:icon="@drawable/ic_format_italic"
@@ -116,6 +109,8 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnUnderline"
                         style="@style/FormatToggleButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:checkable="true"
                         android:contentDescription="Underline"
                         app:icon="@drawable/ic_format_underline"
@@ -125,6 +120,8 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnList"
                         style="@style/FormatToggleButton"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:checkable="true"
                         android:contentDescription="Bulleted list"
                         app:icon="@drawable/ic_format_list_bulleted"
@@ -132,38 +129,46 @@
                         app:iconTint="@color/ic_tint_selector" />
                 </LinearLayout>
             </HorizontalScrollView>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <ImageButton
-                    android:id="@+id/btnToggleFormat"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginEnd="12dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Toggle formatting"
-                    android:src="@drawable/ic_format"
-                    app:tint="@color/IndigoBlue" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSave"
-                    style="@style/Widget.MaterialComponents.Button"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:backgroundTint="@color/IndigoBlue"
-                    android:fontFamily="@font/inter_font_family"
-                    android:text="Save"
-                    android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    android:textSize="18sp"
-                    app:cornerRadius="15dp" />
-            </LinearLayout>
         </LinearLayout>
+
+        <EditText
+            android:id="@+id/etBody"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            android:background="@android:color/transparent"
+            android:fontFamily="@font/inter_regular"
+            android:gravity="top"
+            android:hint="Start writing..."
+            android:inputType="textMultiLine|textCapSentences"
+            android:lineSpacingExtra="4dp"
+            android:padding="12dp"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@+id/layoutEditTools"
+            app:layout_constraintBottom_toTopOf="@+id/btnSave"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSave"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="@color/IndigoBlue"
+            android:fontFamily="@font/inter_font_family"
+            android:text="Save"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            app:cornerRadius="15dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
