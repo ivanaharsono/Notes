@@ -58,9 +58,9 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
-        toolbar = findViewById(R.id.toolbar)
+        toolbar = findViewById(R.id.topAppBar)
         etTitle = findViewById(R.id.etTitle)
-        etBody = findViewById(R.id.etBody)
+        etBody = findViewById(R.id.etContent)
         btnBold = findViewById(R.id.btnBold)
         btnItalic = findViewById(R.id.btnItalic)
         btnUnderline = findViewById(R.id.btnUnderline)
@@ -208,7 +208,7 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun setupSaveButton() {
-        findViewById<View>(R.id.btnSave).setOnClickListener {
+        findViewById<View>(R.id.fabSave).setOnClickListener {
             val title = etTitle.text.toString().trim()
             if (title.isEmpty()) {
                 etTitle.error = "Title cannot be empty"
