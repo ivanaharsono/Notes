@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".MainActivity">
+
+    <!-- ===== KONTEN UTAMA ===== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#F8F9FA">
+
+        <!-- Top App Bar dengan hamburger icon dan profile icon -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/white"
+            app:title="My Notes"
+            app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
+            app:navigationIcon="@drawable/ic_menu"
+            app:menu="@menu/top_menu"
+            app:elevation="2dp" />
+
+        <!-- Search Bar -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginVertical="8dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="2dp">
+
+            <EditText
+                android:id="@+id/etSearch"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="12dp"
+                android:hint="Search your notes..."
+                android:paddingHorizontal="16dp"
+                android:textSize="14sp"
+                android:inputType="text"
+                android:fontFamily="@font/inter_regular" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- RecyclerView + FAB -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvNotes"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:paddingHorizontal="8dp"
+                android:clipToPadding="false"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageButton
+                android:id="@+id/fabAddNote"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_margin="24dp"
+                android:background="@drawable/bg_circle"
+                android:src="@drawable/ic_add"
+                app:tint="@android:color/white"
+                android:contentDescription="Add Note"
+                android:elevation="6dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+    <!-- ===== SIDEBAR / NAVIGATION DRAWER ===== -->
+    <!--
+        NavigationView secara otomatis menampilkan DrawerLayout sebagai sidebar
+        dari sisi kiri (gravity="start").
+
+        Atribut penting:
+        - app:headerLayout  : layout XML khusus header di bagian atas sidebar
+        - app:menu          : menu XML yang berisi item navigasi
+        - app:itemIconTint  : warna icon tiap item (menggunakan selector agar
+                              berubah warna saat item dipilih)
+        - app:itemTextColor : warna teks tiap item (sama dengan itemIconTint)
+    -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/nav_menu"
+        app:itemIconTint="@color/ic_tint_selector"
+        app:itemTextColor="@color/ic_tint_selector" />
+
+</androidx.drawerlayout.widget.DrawerLayout>
