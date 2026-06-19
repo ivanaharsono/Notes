@@ -41,6 +41,21 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    
+    // ──────────────────────────────────────────────────────────
+    // TAMBAHAN LIBRARY UNTUK UAS (PASANG SEKARANG)
+    // ──────────────────────────────────────────────────────────
+    // Retrofit untuk koneksi HTTP API JSON (Tugas Ivan)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    
+    // GSON untuk parsing data JSON otomatis (Tugas Ivan)
+    implementation("com.google.code.gson:gson:2.8.9")
+    
+    // Fragment KTX agar Siti gampang transaksi Fragment (Tugas Siti)
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    // ──────────────────────────────────────────────────────────
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
