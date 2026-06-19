@@ -1,11 +1,11 @@
-package com.angels.notes.network
+package com.example.notes.network 
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
-    // URL utama API server nanti (sementara di-set dummy dulu)
-    private const val BASE_URL = "https://api-notes-kelompoklu.vercel.app/" 
+    // KONEKSI UTAMA: Mengarahkan Android lu ke server Hugging Face
+    private const val BASE_URL = "https://ivanaharsono-notes.hf.space/"
 
     val instance: ApiService by lazy {
         val retrofit = Retrofit.Builder()
