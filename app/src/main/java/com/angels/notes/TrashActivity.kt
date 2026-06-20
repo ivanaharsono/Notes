@@ -54,7 +54,7 @@ class TrashActivity : AppCompatActivity() {
             rvTrash.visibility     = View.VISIBLE
 
             rvTrash.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-            trashAdapter          = NoteAdapter(trashedNotes)
+            trashAdapter          = NoteAdapter(trashedNotes){}
             rvTrash.adapter       = trashAdapter
         }
     }

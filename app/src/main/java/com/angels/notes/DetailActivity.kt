@@ -41,6 +41,10 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var colorActive: ColorStateList
     private lateinit var colorInactive: ColorStateList
 
+    //  Menyimpan ID catatan untuk membedakan apakah pengguna sedang mengedit atau membuat baru
+    private var noteId: Int = -1
+    private var noteDate: String = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
@@ -55,6 +59,9 @@ class DetailActivity : AppCompatActivity() {
         setupToggleFormatting()
         setupSaveButton()
         setupTextWatcher()
+
+        // Membaca data yang dibawa oleh Intent saat halaman ini dibuka
+        loadNoteData()
     }
 
     private fun setupViews() {
@@ -71,6 +78,28 @@ class DetailActivity : AppCompatActivity() {
 
     private fun setupToolbar() {
         toolbar.setNavigationOnClickListener { finish() }
+    }
+
+    // Fungsi untuk menangkap dan menampilkan data ke layar
+    private fun loadNoteData() {
+        // Mengecek apakah ada data ID yang dikirim. Kalau tidak ada, defaultnya adalah -1
+        noteId = intent.getIntExtra("EXTRA_ID", -1)
+
+        if (noteId != -1) {
+            // Jika ID bukan -1, berarti pengguna mengklik kartu catatan lama. Ini adalah mode EDIT.
+            val judul = intent.getStringExtra("EXTRA_JUDUL")
+            val isi = intent.getStringExtra("EXTRA_ISI")
+            noteDate = intent.getStringExtra("EXTRA_TANGGAL") ?: ""
+
+            // Menuliskan datanya ke dalam kolom teks
+            etTitle.setText(judul)
+            etBody.setText(isi)
+
+            toolbar.title = "Edit Note"
+        } else {
+            // Jika ID adalah -1, berarti pengguna menekan tombol (+) dari layar utama. Ini adalah mode TAMBAH BARU.
+            toolbar.title = "New Note"
+        }
     }
 
     private fun setupFormattingButtons() {

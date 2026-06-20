@@ -45,7 +45,7 @@ class ArchiveActivity : AppCompatActivity() {
             rvArchive.visibility   = View.VISIBLE
 
             rvArchive.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-            rvArchive.adapter       = NoteAdapter(archivedNotes)
+            rvArchive.adapter       = NoteAdapter(archivedNotes){}
         }
     }
 }

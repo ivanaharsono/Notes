@@ -187,7 +187,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun showNotesGrid() {
         rvNotes.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-        noteAdapter = NoteAdapter(list)
+
+        // Memasukkan list data sekaligus memberikan perintah saat kartu diklik
+        noteAdapter = NoteAdapter(list) { selectedNote ->
+
+            // Membuat Intent untuk berpindah ke DetailActivity
+            val intent = android.content.Intent(this@MainActivity, DetailActivity::class.java)
+
+            // Membawa data catatan secara "sembunyi-sembunyi" untuk ditampilkan di halaman detail nanti
+            intent.putExtra("EXTRA_ID", selectedNote.id)
+            intent.putExtra("EXTRA_JUDUL", selectedNote.judul)
+            intent.putExtra("EXTRA_ISI", selectedNote.isi)
+            intent.putExtra("EXTRA_TANGGAL", selectedNote.tanggal)
+
+            // Mulai berpindah halaman
+            startActivity(intent)
+        }
+
         rvNotes.adapter = noteAdapter
     }
 

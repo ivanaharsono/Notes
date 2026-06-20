@@ -6,8 +6,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-// UBAH 'val' menjadi 'var' agar list bisa di-update oleh fungsi pencarian
-class NoteAdapter(private var listNote: ArrayList<Note>) : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
+class NoteAdapter(
+    private var listNote: ArrayList<Note>,
+    private val onItemClick: (Note) -> Unit
+) : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
         val view: View = LayoutInflater.from(parent.context).inflate(R.layout.item_note, parent, false)
@@ -18,6 +20,9 @@ class NoteAdapter(private var listNote: ArrayList<Note>) : RecyclerView.Adapter<
         val note = listNote[position]
         holder.tvTitle.text = note.judul
         holder.tvDesc.text = note.isi
+        holder.itemView.setOnClickListener {
+            onItemClick(note)
+        }
     }
 
     override fun getItemCount(): Int {
