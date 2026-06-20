@@ -1,4 +1,4 @@
-package com.example.notes.network 
+package com.angels.notes.network
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

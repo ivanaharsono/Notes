@@ -1,5 +1,6 @@
 package com.angels.notes
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -11,9 +12,18 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // delay 2 detik lalu pindah ke Onboarding
         Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, OnboardingActivity::class.java))
+            val sharedPref = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+            val isLoggedIn = sharedPref.getBoolean("IS_LOGGED_IN", false)
+
+            val intent = if (isLoggedIn) {
+                Intent(this, MainActivity::class.java)
+            } else {
+                Intent(this, OnboardingActivity::class.java)
+            }
+
+            startActivity(intent)
+            
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
             } else {

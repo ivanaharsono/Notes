@@ -1,8 +1,10 @@
 package com.angels.notes
 
 data class Note(
-    val id: Int,
-    val judul: String,
-    val isi: String,
-    val tanggal: String
+    var id: Int = 0,
+    var judul: String,
+    var isi: String,
+    var tanggal: String,
+    var isArchived: Int = 0,
+    var isTrashed: Int = 0
 )

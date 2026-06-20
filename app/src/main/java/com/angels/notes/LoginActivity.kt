@@ -1,5 +1,6 @@
 package com.angels.notes
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
@@ -29,7 +30,6 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
-        // hubungin variabel sama id yang ada di xml
         tilEmail = findViewById(R.id.tilEmail)
         tilPassword = findViewById(R.id.tilPassword)
         etEmail = findViewById(R.id.etEmail)
@@ -45,7 +45,8 @@ class LoginActivity : AppCompatActivity() {
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
             if (validateInput(email, password)) {
-                Toast.makeText(this, "Login berhasil!", Toast.LENGTH_SHORT).show()
+                // Teks diubah ke Bahasa Inggris
+                Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
                 goToMain()
             }
         }
@@ -55,7 +56,6 @@ class LoginActivity : AppCompatActivity() {
         }
 
         tvForgotPassword.setOnClickListener {
-            // pindah ke halaman lupa password
             val intent = Intent(this, ForgotPasswordActivity::class.java)
             startActivity(intent)
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -68,7 +68,6 @@ class LoginActivity : AppCompatActivity() {
         }
 
         tvSignUp.setOnClickListener {
-            // pindah ke sign up terus login-nya ditutup aja biar gak numpuk
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -82,24 +81,27 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun validateInput(email: String, password: String): Boolean {
-        // cek email ama password-nya bener gak formatnya
         var isValid = true
 
         if (email.isEmpty()) {
-            tilEmail.error = "Email tidak boleh kosong"
+            // Teks diubah ke Bahasa Inggris
+            tilEmail.error = "Email cannot be empty"
             isValid = false
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            tilEmail.error = "Format email tidak valid"
+            // Teks diubah ke Bahasa Inggris
+            tilEmail.error = "Invalid email format"
             isValid = false
         } else {
             tilEmail.error = null
         }
 
         if (password.isEmpty()) {
-            tilPassword.error = "Password tidak boleh kosong"
+            // Teks diubah ke Bahasa Inggris
+            tilPassword.error = "Password cannot be empty"
             isValid = false
         } else if (password.length < 6) {
-            tilPassword.error = "Password minimal 6 karakter"
+            // Teks diubah ke Bahasa Inggris
+            tilPassword.error = "Password must be at least 6 characters"
             isValid = false
         } else {
             tilPassword.error = null
@@ -109,10 +111,15 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun goToMain() {
+        val sharedPref = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putBoolean("IS_LOGGED_IN", true)
+        editor.apply()
+
         val intent = Intent(this, MainActivity::class.java)
-        // hapus semua riwayat biar gak bisa balik lagi ke login pas udah di dashboard
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
+        
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
         } else {
