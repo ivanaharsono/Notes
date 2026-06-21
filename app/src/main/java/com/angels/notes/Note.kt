@@ -6,5 +6,8 @@ data class Note(
     var isi: String,
     var tanggal: String,
     var isArchived: Int = 0,
-    var isTrashed: Int = 0
+    var isTrashed: Int = 0,
+    var attachments: String = "",
+    var labelName: String = "",
+    var labelColor: String = "#4B22C6"
 )

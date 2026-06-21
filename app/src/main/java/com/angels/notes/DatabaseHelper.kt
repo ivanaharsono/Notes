@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper
 class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
-        private const val DATABASE_VERSION = 2
+        private const val DATABASE_VERSION = 4
         private const val DATABASE_NAME = "NotesDB.db"
         private const val TABLE_NOTES = "notes"
 
@@ -18,32 +18,52 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         private const val KEY_TANGGAL = "tanggal"
         private const val KEY_IS_ARCHIVED = "is_archived"
         private const val KEY_IS_TRASHED = "is_trashed"
+        private const val KEY_ATTACHMENTS = "attachments"
+        private const val KEY_LABEL_NAME = "label_name"
+        private const val KEY_LABEL_COLOR = "label_color"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        val createNotesTable = ("CREATE TABLE " + TABLE_NOTES + "("
-                + KEY_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + KEY_JUDUL + " TEXT,"
-                + KEY_ISI + " TEXT,"
-                + KEY_TANGGAL + " TEXT,"
-                + KEY_IS_ARCHIVED + " INTEGER DEFAULT 0,"
-                + KEY_IS_TRASHED + " INTEGER DEFAULT 0" + ")")
+        val createNotesTable = """
+            CREATE TABLE $TABLE_NOTES (
+                $KEY_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                $KEY_JUDUL TEXT,
+                $KEY_ISI TEXT,
+                $KEY_TANGGAL TEXT,
+                $KEY_IS_ARCHIVED INTEGER DEFAULT 0,
+                $KEY_IS_TRASHED INTEGER DEFAULT 0,
+                $KEY_ATTACHMENTS TEXT DEFAULT '',
+                $KEY_LABEL_NAME TEXT DEFAULT '',
+                $KEY_LABEL_COLOR TEXT DEFAULT '#4B22C6'
+            )
+        """.trimIndent()
+
         db.execSQL(createNotesTable)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_NOTES")
-        onCreate(db)
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE $TABLE_NOTES ADD COLUMN $KEY_ATTACHMENTS TEXT DEFAULT ''")
+        }
+
+        if (oldVersion < 4) {
+            db.execSQL("ALTER TABLE $TABLE_NOTES ADD COLUMN $KEY_LABEL_NAME TEXT DEFAULT ''")
+            db.execSQL("ALTER TABLE $TABLE_NOTES ADD COLUMN $KEY_LABEL_COLOR TEXT DEFAULT '#4B22C6'")
+        }
     }
 
     fun addNote(note: Note): Long {
         val db = this.writableDatabase
         val values = ContentValues()
+
         values.put(KEY_JUDUL, note.judul)
         values.put(KEY_ISI, note.isi)
         values.put(KEY_TANGGAL, note.tanggal)
         values.put(KEY_IS_ARCHIVED, note.isArchived)
         values.put(KEY_IS_TRASHED, note.isTrashed)
+        values.put(KEY_ATTACHMENTS, note.attachments)
+        values.put(KEY_LABEL_NAME, note.labelName)
+        values.put(KEY_LABEL_COLOR, note.labelColor)
 
         val success = db.insert(TABLE_NOTES, null, values)
         db.close()
@@ -52,24 +72,17 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun getAllNotes(): ArrayList<Note> {
         val noteList = ArrayList<Note>()
-        val selectQuery = "SELECT * FROM $TABLE_NOTES WHERE $KEY_IS_ARCHIVED = 0 AND $KEY_IS_TRASHED = 0 ORDER BY $KEY_ID DESC"
-        
+        val query = "SELECT * FROM $TABLE_NOTES WHERE $KEY_IS_ARCHIVED = 0 AND $KEY_IS_TRASHED = 0 ORDER BY $KEY_ID DESC"
+
         val db = this.readableDatabase
-        val cursor = db.rawQuery(selectQuery, null)
+        val cursor = db.rawQuery(query, null)
 
         if (cursor.moveToFirst()) {
             do {
-                val note = Note(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)),
-                    judul = cursor.getString(cursor.getColumnIndexOrThrow(KEY_JUDUL)),
-                    isi = cursor.getString(cursor.getColumnIndexOrThrow(KEY_ISI)),
-                    tanggal = cursor.getString(cursor.getColumnIndexOrThrow(KEY_TANGGAL)),
-                    isArchived = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_ARCHIVED)),
-                    isTrashed = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_TRASHED))
-                )
-                noteList.add(note)
+                noteList.add(readNoteFromCursor(cursor))
             } while (cursor.moveToNext())
         }
+
         cursor.close()
         db.close()
         return noteList
@@ -77,24 +90,17 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun getArchivedNotes(): ArrayList<Note> {
         val noteList = ArrayList<Note>()
-        val selectQuery = "SELECT * FROM $TABLE_NOTES WHERE $KEY_IS_ARCHIVED = 1 AND $KEY_IS_TRASHED = 0 ORDER BY $KEY_ID DESC"
-        
+        val query = "SELECT * FROM $TABLE_NOTES WHERE $KEY_IS_ARCHIVED = 1 AND $KEY_IS_TRASHED = 0 ORDER BY $KEY_ID DESC"
+
         val db = this.readableDatabase
-        val cursor = db.rawQuery(selectQuery, null)
+        val cursor = db.rawQuery(query, null)
 
         if (cursor.moveToFirst()) {
             do {
-                val note = Note(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)),
-                    judul = cursor.getString(cursor.getColumnIndexOrThrow(KEY_JUDUL)),
-                    isi = cursor.getString(cursor.getColumnIndexOrThrow(KEY_ISI)),
-                    tanggal = cursor.getString(cursor.getColumnIndexOrThrow(KEY_TANGGAL)),
-                    isArchived = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_ARCHIVED)),
-                    isTrashed = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_TRASHED))
-                )
-                noteList.add(note)
+                noteList.add(readNoteFromCursor(cursor))
             } while (cursor.moveToNext())
         }
+
         cursor.close()
         db.close()
         return noteList
@@ -102,24 +108,17 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
 
     fun getTrashedNotes(): ArrayList<Note> {
         val noteList = ArrayList<Note>()
-        val selectQuery = "SELECT * FROM $TABLE_NOTES WHERE $KEY_IS_TRASHED = 1 ORDER BY $KEY_ID DESC"
-        
+        val query = "SELECT * FROM $TABLE_NOTES WHERE $KEY_IS_TRASHED = 1 ORDER BY $KEY_ID DESC"
+
         val db = this.readableDatabase
-        val cursor = db.rawQuery(selectQuery, null)
+        val cursor = db.rawQuery(query, null)
 
         if (cursor.moveToFirst()) {
             do {
-                val note = Note(
-                    id = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)),
-                    judul = cursor.getString(cursor.getColumnIndexOrThrow(KEY_JUDUL)),
-                    isi = cursor.getString(cursor.getColumnIndexOrThrow(KEY_ISI)),
-                    tanggal = cursor.getString(cursor.getColumnIndexOrThrow(KEY_TANGGAL)),
-                    isArchived = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_ARCHIVED)),
-                    isTrashed = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_TRASHED))
-                )
-                noteList.add(note)
+                noteList.add(readNoteFromCursor(cursor))
             } while (cursor.moveToNext())
         }
+
         cursor.close()
         db.close()
         return noteList
@@ -128,11 +127,15 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     fun updateNote(note: Note): Int {
         val db = this.writableDatabase
         val values = ContentValues()
+
         values.put(KEY_JUDUL, note.judul)
         values.put(KEY_ISI, note.isi)
         values.put(KEY_TANGGAL, note.tanggal)
         values.put(KEY_IS_ARCHIVED, note.isArchived)
         values.put(KEY_IS_TRASHED, note.isTrashed)
+        values.put(KEY_ATTACHMENTS, note.attachments)
+        values.put(KEY_LABEL_NAME, note.labelName)
+        values.put(KEY_LABEL_COLOR, note.labelColor)
 
         val success = db.update(TABLE_NOTES, values, "$KEY_ID=?", arrayOf(note.id.toString()))
         db.close()
@@ -142,8 +145,21 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
     fun updateNoteStatus(id: Int, isArchived: Int, isTrashed: Int): Int {
         val db = this.writableDatabase
         val values = ContentValues()
+
         values.put(KEY_IS_ARCHIVED, isArchived)
         values.put(KEY_IS_TRASHED, isTrashed)
+
+        val success = db.update(TABLE_NOTES, values, "$KEY_ID=?", arrayOf(id.toString()))
+        db.close()
+        return success
+    }
+
+    fun updateNoteLabel(id: Int, labelName: String, labelColor: String): Int {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        values.put(KEY_LABEL_NAME, labelName)
+        values.put(KEY_LABEL_COLOR, labelColor)
 
         val success = db.update(TABLE_NOTES, values, "$KEY_ID=?", arrayOf(id.toString()))
         db.close()
@@ -162,5 +178,23 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         val success = db.delete(TABLE_NOTES, "$KEY_IS_TRASHED=?", arrayOf("1"))
         db.close()
         return success
+    }
+
+    private fun readNoteFromCursor(cursor: android.database.Cursor): Note {
+        val attachmentColumn = cursor.getColumnIndex(KEY_ATTACHMENTS)
+        val labelNameColumn = cursor.getColumnIndex(KEY_LABEL_NAME)
+        val labelColorColumn = cursor.getColumnIndex(KEY_LABEL_COLOR)
+
+        return Note(
+            id = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_ID)),
+            judul = cursor.getString(cursor.getColumnIndexOrThrow(KEY_JUDUL)),
+            isi = cursor.getString(cursor.getColumnIndexOrThrow(KEY_ISI)),
+            tanggal = cursor.getString(cursor.getColumnIndexOrThrow(KEY_TANGGAL)),
+            isArchived = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_ARCHIVED)),
+            isTrashed = cursor.getInt(cursor.getColumnIndexOrThrow(KEY_IS_TRASHED)),
+            attachments = if (attachmentColumn >= 0) cursor.getString(attachmentColumn) ?: "" else "",
+            labelName = if (labelNameColumn >= 0) cursor.getString(labelNameColumn) ?: "" else "",
+            labelColor = if (labelColorColumn >= 0) cursor.getString(labelColorColumn) ?: "#4B22C6" else "#4B22C6"
+        )
     }
 }

@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    item_label.xml
-    Layout untuk satu baris item label di halaman Labels.
-    Menampilkan:
-    - Icon label di kiri
-    - Nama label
-    - Tombol delete di kanan
--->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -18,15 +10,14 @@
     android:paddingVertical="4dp"
     android:background="@android:color/white">
 
-    <!-- Icon label -->
     <ImageView
+        android:id="@+id/imgLabelIcon"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/ic_format"
-        android:contentDescription="@string/label_icon_desc"
+        android:src="@drawable/ic_label_tag"
+        android:contentDescription="Label icon"
         app:tint="@color/IndigoBlue" />
 
-    <!-- Nama label -->
     <TextView
         android:id="@+id/tvLabelName"
         android:layout_width="0dp"
@@ -34,12 +25,11 @@
         android:layout_weight="1"
         android:layout_marginHorizontal="16dp"
         android:paddingVertical="14dp"
-        android:text="@string/label_name_placeholder"
+        android:text="Work"
         android:textSize="15sp"
         android:fontFamily="@font/inter_regular"
         android:textColor="@color/black" />
 
-    <!-- Tombol hapus label -->
     <ImageButton
         android:id="@+id/btnDeleteLabel"
         android:layout_width="40dp"

@@ -28,59 +28,13 @@
             app:menu="@menu/top_menu"
             app:elevation="2dp" />
 
-        <!-- Search Bar -->
-        <androidx.cardview.widget.CardView
+        <!-- Container untuk menampilkan Fragment -->
+        <FrameLayout
+            android:id="@+id/fragmentContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginVertical="8dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="2dp">
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-            <EditText
-                android:id="@+id/etSearch"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:background="@android:color/transparent"
-                android:drawableStart="@drawable/ic_search"
-                android:drawablePadding="12dp"
-                android:hint="Search your notes..."
-                android:paddingHorizontal="16dp"
-                android:textSize="14sp"
-                android:inputType="text"
-                android:fontFamily="@font/inter_regular" />
-        </androidx.cardview.widget.CardView>
-
-        <!-- RecyclerView + FAB -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvNotes"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:paddingHorizontal="8dp"
-                android:clipToPadding="false"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageButton
-                android:id="@+id/fabAddNote"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_margin="24dp"
-                android:background="@drawable/bg_circle"
-                android:src="@drawable/ic_add"
-                app:tint="@android:color/white"
-                android:contentDescription="Add Note"
-                android:elevation="6dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 
     <com.google.android.material.navigation.NavigationView
