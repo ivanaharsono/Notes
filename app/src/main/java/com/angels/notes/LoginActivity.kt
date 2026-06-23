@@ -2,11 +2,16 @@ package com.angels.notes
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.Network
+import android.os.Build
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
 
@@ -21,12 +26,48 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var tvForgotPassword: TextView
     private lateinit var tvSignUp: TextView
 
+    private val networkReceiver = NetworkStatusReceiver()
+    private var isConnected = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         setupViews()
         setupClickListeners()
+        setupNetworkMonitoring()
+    }
+
+    private fun setupNetworkMonitoring() {
+        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                isConnected = true
+            }
+
+            override fun onLost(network: Network) {
+                isConnected = false
+                val intent = Intent("com.angels.notes.CONNECTIVITY_CHANGE")
+                intent.putExtra("isConnected", false)
+                sendBroadcast(intent)
+            }
+        })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter("com.angels.notes.CONNECTIVITY_CHANGE")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(networkReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(networkReceiver, filter)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(networkReceiver)
     }
 
     private fun setupViews() {
@@ -42,6 +83,10 @@ class LoginActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         btnLogin.setOnClickListener {
+            if (!isConnected) {
+                Toast.makeText(this, "No internet connection. Cannot login.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
             if (validateInput(email, password)) {
@@ -58,7 +103,7 @@ class LoginActivity : AppCompatActivity() {
         tvForgotPassword.setOnClickListener {
             val intent = Intent(this, ForgotPasswordActivity::class.java)
             startActivity(intent)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
             } else {
                 @Suppress("DEPRECATION")
@@ -70,7 +115,7 @@ class LoginActivity : AppCompatActivity() {
         tvSignUp.setOnClickListener {
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
             } else {
                 @Suppress("DEPRECATION")
@@ -112,15 +157,15 @@ class LoginActivity : AppCompatActivity() {
 
     private fun goToMain() {
         val sharedPref = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putBoolean("IS_LOGGED_IN", true)
-        editor.apply()
+        sharedPref.edit {
+            putBoolean("IS_LOGGED_IN", true)
+        }
 
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
         } else {
             @Suppress("DEPRECATION")

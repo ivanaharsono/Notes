@@ -2,6 +2,8 @@ package com.angels.notes
 
 import android.app.Dialog
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.widget.ImageButton
 import androidx.activity.OnBackPressedCallback
@@ -17,6 +19,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var topAppBar: MaterialToolbar
     private lateinit var navView: NavigationView
+
+    private val batteryReceiver = BatteryLevelReceiver()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +49,22 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter(Intent.ACTION_BATTERY_LOW)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(batteryReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(batteryReceiver, filter)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(batteryReceiver)
     }
 
     private fun setupToolbar() {
