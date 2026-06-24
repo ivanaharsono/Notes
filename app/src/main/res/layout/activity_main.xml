@@ -26,7 +26,8 @@
             app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
             app:navigationIcon="@drawable/ic_menu"
             app:menu="@menu/top_menu"
-            app:elevation="2dp" />
+            app:elevation="2dp"
+            app:contentInsetEndWithActions="8dp" />
 
         <!-- Container untuk menampilkan Fragment -->
         <FrameLayout
@@ -46,6 +47,7 @@
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/nav_menu"
         app:itemIconTint="@color/ic_tint_selector"
-        app:itemTextColor="@color/ic_tint_selector" />
+        app:itemTextColor="@color/ic_tint_selector"
+        app:itemBackground="@drawable/bg_nav_item_checked"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>

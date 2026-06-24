@@ -12,6 +12,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import android.content.Context
 
 class TrashFragment : Fragment() {
 
@@ -106,8 +108,13 @@ class TrashFragment : Fragment() {
     }
 
     private fun showTrashedNotes() {
-        rvTrash.layoutManager =
+        val sharedPref = requireContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+        val layoutMode = sharedPref.getString("NOTE_LAYOUT", "Grid")
+        rvTrash.layoutManager = if (layoutMode == "List") {
+            LinearLayoutManager(requireContext())
+        } else {
             StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        }
 
         trashAdapter = NoteAdapter(
             trashedNotes,

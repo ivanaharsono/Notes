@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import android.content.Context
 
 class ArchiveFragment : Fragment() {
 
@@ -98,8 +100,13 @@ class ArchiveFragment : Fragment() {
     }
 
     private fun showArchivedNotes() {
-        rvArchive.layoutManager =
+        val sharedPref = requireContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+        val layoutMode = sharedPref.getString("NOTE_LAYOUT", "Grid")
+        rvArchive.layoutManager = if (layoutMode == "List") {
+            LinearLayoutManager(requireContext())
+        } else {
             StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        }
 
         noteAdapter = NoteAdapter(
             archivedNotes,

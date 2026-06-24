@@ -2,11 +2,16 @@ package com.angels.notes
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.Network
+import android.os.Build
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
 
@@ -17,9 +22,11 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var etEmail: android.widget.EditText
     private lateinit var etPassword: android.widget.EditText
     private lateinit var btnLogin: MaterialButton
-    private lateinit var btnGoogle: MaterialButton
     private lateinit var tvForgotPassword: TextView
     private lateinit var tvSignUp: TextView
+
+    private val networkReceiver = NetworkStatusReceiver()
+    private var isConnected = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +34,39 @@ class LoginActivity : AppCompatActivity() {
 
         setupViews()
         setupClickListeners()
+        setupNetworkMonitoring()
+    }
+
+    private fun setupNetworkMonitoring() {
+        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                isConnected = true
+            }
+
+            override fun onLost(network: Network) {
+                isConnected = false
+                val intent = Intent("com.angels.notes.CONNECTIVITY_CHANGE")
+                intent.putExtra("isConnected", false)
+                sendBroadcast(intent)
+            }
+        })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val filter = IntentFilter("com.angels.notes.CONNECTIVITY_CHANGE")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(networkReceiver, filter, RECEIVER_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(networkReceiver, filter)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(networkReceiver)
     }
 
     private fun setupViews() {
@@ -35,30 +75,29 @@ class LoginActivity : AppCompatActivity() {
         etEmail = findViewById(R.id.etEmail)
         etPassword = findViewById(R.id.etPassword)
         btnLogin = findViewById(R.id.btnLogin)
-        btnGoogle = findViewById(R.id.btnGoogle)
         tvForgotPassword = findViewById(R.id.tvForgotPassword)
         tvSignUp = findViewById(R.id.tvSignUp)
     }
 
     private fun setupClickListeners() {
         btnLogin.setOnClickListener {
+            if (!isConnected) {
+                Toast.makeText(this, "No internet connection. Cannot login.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
             if (validateInput(email, password)) {
                 // Teks diubah ke Bahasa Inggris
                 Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
-                goToMain()
+                goToMain(email)
             }
-        }
-
-        btnGoogle.setOnClickListener {
-            Toast.makeText(this, "Google Sign-In coming soon!", Toast.LENGTH_SHORT).show()
         }
 
         tvForgotPassword.setOnClickListener {
             val intent = Intent(this, ForgotPasswordActivity::class.java)
             startActivity(intent)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
             } else {
                 @Suppress("DEPRECATION")
@@ -70,7 +109,7 @@ class LoginActivity : AppCompatActivity() {
         tvSignUp.setOnClickListener {
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
             } else {
                 @Suppress("DEPRECATION")
@@ -110,22 +149,16 @@ class LoginActivity : AppCompatActivity() {
         return isValid
     }
 
-    private fun goToMain() {
+    private fun goToMain(email: String) {
         val sharedPref = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putBoolean("IS_LOGGED_IN", true)
-        editor.apply()
+        sharedPref.edit {
+            putBoolean("IS_LOGGED_IN", true)
+            putString("USER_EMAIL", email)
+        }
 
         val intent = Intent(this, MainActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
-        
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
-        } else {
-            @Suppress("DEPRECATION")
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-        }
         finish()
     }
 }

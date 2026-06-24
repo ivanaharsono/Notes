@@ -15,6 +15,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import java.util.Locale
+import android.content.Context
+import androidx.recyclerview.widget.LinearLayoutManager
+
 
 class DashboardFragment : Fragment() {
 
@@ -55,7 +58,7 @@ class DashboardFragment : Fragment() {
 
         dbHelper = DatabaseHelper(requireContext())
 
-        showNotesGrid()
+        showNotes()
         loadNotesFromDB()
         setupFab()
         setupSearch()
@@ -86,15 +89,20 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun showNotesGrid() {
-        rvNotes.layoutManager =
+    private fun showNotes() {
+        val sharedPref = requireContext().getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+        val layoutMode = sharedPref.getString("NOTE_LAYOUT", "Grid")
+
+        rvNotes.layoutManager = if (layoutMode == "List") {
+            LinearLayoutManager(requireContext())
+        } else {
             StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        }
 
         noteAdapter = NoteAdapter(
             list,
             onItemClick = { selectedNote ->
                 val intent = Intent(requireContext(), DetailActivity::class.java)
-
                 intent.putExtra("EXTRA_ID", selectedNote.id)
                 intent.putExtra("EXTRA_JUDUL", selectedNote.judul)
                 intent.putExtra("EXTRA_ISI", selectedNote.isi)
@@ -102,15 +110,10 @@ class DashboardFragment : Fragment() {
                 intent.putExtra("EXTRA_IS_ARCHIVED", selectedNote.isArchived)
                 intent.putExtra("EXTRA_IS_TRASHED", selectedNote.isTrashed)
                 intent.putExtra("EXTRA_ATTACHMENTS", selectedNote.attachments)
-
                 startActivity(intent)
             },
-            onItemLongClick = {
-                updateSelectionActions()
-            },
-            onSelectionChanged = {
-                updateSelectionActions()
-            }
+            onItemLongClick = { updateSelectionActions() },
+            onSelectionChanged = { updateSelectionActions() }
         )
 
         rvNotes.adapter = noteAdapter

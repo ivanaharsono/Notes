@@ -4,7 +4,20 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
+    <!-- Gambar foto -->
     <path
         android:fillColor="#FF000000"
-        android:pathData="M19,3H5C3.9,3 3,3.9 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19V5C21,3.9 20.1,3 19,3M8.5,8.5A2,2 0,1 1,8.5 4.5A2,2 0,0 1,8.5 8.5M19,17H5L8.5,12.5L11,15.5L14.5,11L19,17M18,9H16V7H14V5H16V3H18V5H20V7H18V9Z" />
+        android:pathData="M21,19V5C21,3.9 20.1,3 19,3H5C3.9,3 3,3.9 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19ZM8.5,13.5L11,16.51L14.5,12L19,18H5L8.5,13.5Z"/>
+    <!-- Tanda + dengan circle background -->
+    <circle
+        android:fillColor="#FF000000"
+        cx="17"
+        cy="7"
+        r="3.5"/>
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M17,5.5V8.5M15.5,7H18.5"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"/>
 </vector>

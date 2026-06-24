@@ -37,9 +37,11 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import android.view.Window
 import android.os.Build
 import android.view.WindowInsetsController
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import android.widget.ScrollView
 
 class DetailActivity : AppCompatActivity() {
 
@@ -48,7 +50,6 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var etBody: EditText
     private lateinit var tvNoteMeta: TextView
     private lateinit var formatScrollView: HorizontalScrollView
-    private lateinit var mediaScrollView: HorizontalScrollView
     private lateinit var layoutAttachments: LinearLayout
     private lateinit var btnBold: MaterialButton
     private lateinit var btnItalic: MaterialButton
@@ -77,6 +78,7 @@ class DetailActivity : AppCompatActivity() {
     private var lastSavedTitle = ""
     private var lastSavedBody = ""
     private var lastSavedAttachments = ""
+    private var activeEditText: EditText? = null
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {
@@ -124,10 +126,25 @@ class DetailActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.toolbar)
         etTitle = findViewById(R.id.etTitle)
         etBody = findViewById(R.id.etBody)
+        activeEditText = etBody
+
+        etBody.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                activeEditText = etBody
+                syncFormattingButtonsToCursor(etBody)
+            }
+        }
+
+        etBody.setOnTouchListener { _, _ ->
+            etBody.postDelayed({
+                syncFormattingButtonsToCursor(etBody)
+            }, 100)
+            false
+        }
+
         tvNoteMeta = findViewById(R.id.tvNoteMeta)
         formatScrollView = findViewById(R.id.formatScrollView)
-        mediaScrollView = findViewById(R.id.mediaScrollView)
-        layoutAttachments = findViewById(R.id.layoutAttachments)
+        layoutAttachments = findViewById(R.id.dynamicContent)
         btnBold = findViewById(R.id.btnBold)
         btnItalic = findViewById(R.id.btnItalic)
         btnUnderline = findViewById(R.id.btnUnderline)
@@ -183,7 +200,6 @@ class DetailActivity : AppCompatActivity() {
                 else -> false
             }
         }
-
         toolbar.overflowIcon?.setTint(ContextCompat.getColor(this, android.R.color.black))
     }
 
@@ -202,7 +218,12 @@ class DetailActivity : AppCompatActivity() {
             displayDate = noteDate.ifEmpty { getCurrentDisplayDate() }
 
             etTitle.setText(judul)
-            etBody.setText(isi)
+            if (isi != null) {
+                etBody.setText(htmlToSpannable(isi))
+            } else {
+                etBody.setText("")
+            }
+            renderAttachments()
 
             when {
                 isTrashedNote == 1 -> {
@@ -234,18 +255,36 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun setupKeyboardToolbar() {
-        formatScrollView.visibility = View.VISIBLE
+        val rootView = findViewById<View>(android.R.id.content)
+        val mainScrollView = findViewById<ScrollView>(R.id.mainScrollView)
+
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { view, insets ->
+            val isKeyboardVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+            val imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val navBarHeight = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+
+            if (isKeyboardVisible) {
+                formatScrollView.visibility = View.VISIBLE
+                val basePadding = if (imeHeight > navBarHeight) imeHeight - navBarHeight else imeHeight
+                val extraLift = dp(12)
+                view.setPadding(0, 0, 0, basePadding + extraLift)
+            } else {
+                formatScrollView.visibility = View.GONE
+                view.setPadding(0, 0, 0, 0)
+            }
+
+            insets
+        }
     }
 
     private fun setupAutoSave() {
         lastSavedTitle = etTitle.text.toString().trim()
-        lastSavedBody = etBody.text.toString().trim()
+        lastSavedBody = spannableToHtml(etBody.text).trim()
         lastSavedAttachments = serializeAttachments()
 
         val watcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
             override fun afterTextChanged(s: Editable?) {
                 updateNoteMeta()
                 scheduleAutoSave()
@@ -268,18 +307,12 @@ class DetailActivity : AppCompatActivity() {
 
     private fun saveNoteAutomatically() {
         val rawTitle = etTitle.text.toString().trim()
-        val body = etBody.text.toString().trim()
+        val body = spannableToHtml(etBody.text).trim()
         val attachments = serializeAttachments()
 
-        if (rawTitle.isEmpty() && body.isEmpty() && attachments.isEmpty()) {
-            return
-        }
-
+        if (rawTitle.isEmpty() && body.isEmpty() && attachments.isEmpty()) return
         val title = if (rawTitle.isEmpty()) "Untitled Note" else rawTitle
-
-        if (title == lastSavedTitle && body == lastSavedBody && attachments == lastSavedAttachments) {
-            return
-        }
+        if (title == lastSavedTitle && body == lastSavedBody && attachments == lastSavedAttachments) return
 
         if (noteId != -1) {
             val updatedNote = Note(
@@ -301,7 +334,6 @@ class DetailActivity : AppCompatActivity() {
                 isTrashed = 0,
                 attachments = attachments
             )
-
             val newId = dbHelper.addNote(newNote)
             if (newId != -1L) {
                 noteId = newId.toInt()
@@ -309,7 +341,6 @@ class DetailActivity : AppCompatActivity() {
                 showDefaultNoteMenu()
             }
         }
-
         lastSavedTitle = title
         lastSavedBody = body
         lastSavedAttachments = attachments
@@ -347,7 +378,34 @@ class DetailActivity : AppCompatActivity() {
         btnList.setOnClickListener {
             isBullet = !isBullet
             updateButtonState(btnList, isBullet)
-            applyFormattingToSelectionOrCursor()
+
+            val target = activeEditText ?: etBody
+            val text = target.text.toString()
+            val cursorPosition = target.selectionStart
+
+            var lineStart = 0
+            if (cursorPosition > 0) {
+                val lastNewLine = text.lastIndexOf('\n', cursorPosition - 1)
+                lineStart = if (lastNewLine != -1) lastNewLine + 1 else 0
+            }
+
+            val bulletString = "\u2022 "
+            val lineEnd = text.indexOf('\n', lineStart)
+            val currentLine = if (lineEnd != -1) text.substring(lineStart, lineEnd) else text.substring(lineStart)
+
+            if (isBullet) {
+                if (!currentLine.startsWith(bulletString)) {
+                    target.text.insert(lineStart, bulletString)
+                }
+            } else {
+                if (currentLine.startsWith(bulletString)) {
+                    target.text.delete(lineStart, lineStart + bulletString.length)
+                }
+            }
+            target.requestFocus()
+            if (isBullet && target.text.isEmpty()) {
+                target.text.insert(0, bulletString)
+            }
         }
 
         btnAddImage.setOnClickListener {
@@ -372,114 +430,158 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun applyFormattingToSelectionOrCursor() {
-        val selectionStart = etBody.selectionStart
-        val selectionEnd = etBody.selectionEnd
-
+        val target = activeEditText ?: etBody
+        val selectionStart = target.selectionStart
+        val selectionEnd = target.selectionEnd
         if (selectionStart != selectionEnd) {
-            applyFormattingToRange(selectionStart, selectionEnd)
+            applyFormattingToRange(target, selectionStart, selectionEnd)
         }
     }
 
-    private fun applyFormattingToRange(start: Int, end: Int) {
-        val spannable = etBody.text as Spannable
-
+    private fun applyFormattingToRange(target: EditText, start: Int, end: Int) {
+        val spannable = target.text as Spannable
         val styleSpans = spannable.getSpans(start, end, StyleSpan::class.java)
         for (span in styleSpans) spannable.removeSpan(span)
-
         val underlines = spannable.getSpans(start, end, UnderlineSpan::class.java)
         for (span in underlines) spannable.removeSpan(span)
 
-        val bullets = spannable.getSpans(start, end, BulletSpan::class.java)
-        for (span in bullets) spannable.removeSpan(span)
-
-        if (isBold) {
-            spannable.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        if (isItalic) {
-            spannable.setSpan(StyleSpan(Typeface.ITALIC), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        if (isUnderline) {
-            spannable.setSpan(UnderlineSpan(), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        if (isBullet) {
-            spannable.setSpan(BulletSpan(16), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-
+        if (isBold) spannable.setSpan(StyleSpan(Typeface.BOLD), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        if (isItalic) spannable.setSpan(StyleSpan(Typeface.ITALIC), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        if (isUnderline) spannable.setSpan(UnderlineSpan(), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         scheduleAutoSave()
     }
 
     private fun setupTextWatcher() {
-        etBody.addTextChangedListener(object : TextWatcher {
+        attachFormattingWatcher(etBody)
+    }
+
+    private fun attachFormattingWatcher(editText: EditText) {
+        editText.addTextChangedListener(object : TextWatcher {
+            var wasEnterPressed = false
+            var insertPos = -1
+            // Untuk track range teks yang berubah
+            var changeStart = -1
+            var changeCount = 0
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (isBullet && count == 1 && s?.get(start) == '\n') {
+                    wasEnterPressed = true
+                    insertPos = start + 1
+                }
+                // Track posisi dan panjang perubahan (untuk handle suggestion/autocorrect)
+                if (count > 0) {
+                    changeStart = start
+                    changeCount = count
+                }
+            }
 
             override fun afterTextChanged(s: Editable?) {
+                if (wasEnterPressed) {
+                    wasEnterPressed = false
+                    s?.insert(insertPos, "\u2022 ")
+                }
+
                 if (s == null) return
-                if (!isBold && !isItalic && !isUnderline && !isBullet) return
+                if (!isBold && !isItalic && !isUnderline) return
 
                 val spannable = s as Spannable
                 val length = s.length
                 if (length == 0) return
 
-                val lastCharStart = length - 1
+                // Pakai changeStart & changeCount supaya suggestion word juga ke-cover
+                val applyStart = if (changeStart >= 0) changeStart else length - 1
+                val applyEnd = if (changeStart >= 0 && changeCount > 0) changeStart + changeCount else length
 
-                val existingStyleSpans = spannable.getSpans(lastCharStart, length, StyleSpan::class.java)
+                val safeStart = applyStart.coerceIn(0, length)
+                val safeEnd = applyEnd.coerceIn(0, length)
+
+                if (safeStart >= safeEnd) return
+
+                // Hapus span lama di range yang berubah
+                val existingStyleSpans = spannable.getSpans(safeStart, safeEnd, StyleSpan::class.java)
                 for (span in existingStyleSpans) spannable.removeSpan(span)
-
-                val existingUnderlines = spannable.getSpans(lastCharStart, length, UnderlineSpan::class.java)
+                val existingUnderlines = spannable.getSpans(safeStart, safeEnd, UnderlineSpan::class.java)
                 for (span in existingUnderlines) spannable.removeSpan(span)
 
-                val existingBullets = spannable.getSpans(lastCharStart, length, BulletSpan::class.java)
-                for (span in existingBullets) spannable.removeSpan(span)
+                // Apply span baru di range yang berubah
+                if (isBold) spannable.setSpan(StyleSpan(Typeface.BOLD), safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (isItalic) spannable.setSpan(StyleSpan(Typeface.ITALIC), safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                if (isUnderline) spannable.setSpan(UnderlineSpan(), safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
-                if (isBold) {
-                    spannable.setSpan(StyleSpan(Typeface.BOLD), lastCharStart, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-                if (isItalic) {
-                    spannable.setSpan(StyleSpan(Typeface.ITALIC), lastCharStart, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-                if (isUnderline) {
-                    spannable.setSpan(UnderlineSpan(), lastCharStart, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-                if (isBullet) {
-                    spannable.setSpan(BulletSpan(16), lastCharStart, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
+                // Reset tracker
+                changeStart = -1
+                changeCount = 0
             }
         })
     }
 
+    private fun syncFormattingButtonsToCursor(editText: EditText) {
+        val selStart = editText.selectionStart
+        val selEnd = editText.selectionEnd
+        if (selStart < 0) return
+        val spannable = editText.text as? Spannable ?: return
+
+        // Kalau ada selection, cek span di range selection
+        // Kalau tidak, cek 1 karakter sebelum kursor
+        val checkStart = if (selStart != selEnd) selStart else if (selStart > 0) selStart - 1 else selStart
+        val checkEnd = if (selStart != selEnd) selEnd else selStart
+
+        val styleSpans = spannable.getSpans(checkStart, checkEnd, StyleSpan::class.java)
+        isBold = styleSpans.any { it.style == Typeface.BOLD }
+        isItalic = styleSpans.any { it.style == Typeface.ITALIC }
+        isUnderline = spannable.getSpans(checkStart, checkEnd, UnderlineSpan::class.java).isNotEmpty()
+
+        // Cek bullet di baris kursor
+        val text = editText.text.toString()
+        val lastNewLine = if (selStart > 0) text.lastIndexOf('\n', selStart - 1) else -1
+        val lineStart = if (lastNewLine != -1) lastNewLine + 1 else 0
+        val lineEnd = text.indexOf('\n', lineStart)
+        val currentLine = if (lineEnd != -1) text.substring(lineStart, lineEnd) else text.substring(lineStart)
+        isBullet = currentLine.startsWith("\u2022 ")
+
+        updateButtonState(btnBold, isBold)
+        updateButtonState(btnItalic, isItalic)
+        updateButtonState(btnUnderline, isUnderline)
+        updateButtonState(btnList, isBullet)
+    }
     private fun addAttachment(path: String) {
+        insertImageAtCursor(path)
         currentAttachments.add(path)
-        renderAttachments()
         scheduleAutoSave()
     }
 
     private fun renderAttachments() {
-        layoutAttachments.removeAllViews()
-        mediaScrollView.visibility = if (currentAttachments.isEmpty()) View.GONE else View.VISIBLE
+        val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
 
-        val imageWidth = resources.displayMetrics.widthPixels - dp(32)
-        val imageHeight = dp(260)
+        for (i in mainContainer.childCount - 1 downTo 0) {
+            if (mainContainer.getChildAt(i) is ImageView) {
+                mainContainer.removeViewAt(i)
+            }
+        }
+
+        val bodyIndex = mainContainer.indexOfChild(etBody)
+        var insertIndex = bodyIndex + 1
 
         currentAttachments.forEach { path ->
-            val imageView = ImageView(this)
-
-            val params = LinearLayout.LayoutParams(imageWidth, imageHeight)
-            params.marginEnd = dp(12)
-
-            imageView.layoutParams = params
-            imageView.scaleType = ImageView.ScaleType.FIT_CENTER
-            imageView.adjustViewBounds = true
-            imageView.setBackgroundColor(Color.WHITE)
-            imageView.setPadding(dp(4), dp(4), dp(4), dp(4))
-            imageView.setImageURI(Uri.fromFile(File(path)))
-
-            imageView.setOnLongClickListener {
-                confirmRemoveAttachment(path)
-                true
+            val imageView = ImageView(this).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    setMargins(dp(16), dp(0), dp(16), dp(4))
+                }
+                adjustViewBounds = true
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setImageURI(Uri.fromFile(File(path)))
+                setOnLongClickListener {
+                    confirmRemoveAttachment(path)
+                    true
+                }
             }
-
-            layoutAttachments.addView(imageView)
+            mainContainer.addView(imageView, insertIndex)
+            insertIndex++
         }
     }
 
@@ -619,5 +721,137 @@ class DetailActivity : AppCompatActivity() {
 
         statusBarBackground.layoutParams.height = statusBarHeight
         statusBarBackground.requestLayout()
+    }
+
+    private fun insertImageAtCursor(path: String) {
+        val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
+        val currentEditText = activeEditText ?: etBody
+
+        val cursorPosition = currentEditText.selectionStart.coerceAtLeast(0)
+        val fullText = currentEditText.text.toString()
+
+        val textAfterCursor = fullText.substring(cursorPosition)
+
+        // FIX: Pakai delete() bukan setText() supaya span sebelum kursor tetap terjaga
+        if (cursorPosition < currentEditText.text.length) {
+            currentEditText.text.delete(cursorPosition, currentEditText.text.length)
+        }
+        currentEditText.setSelection(currentEditText.text.length)
+
+        val currentIndex = mainContainer.indexOfChild(currentEditText)
+
+        val imageView = ImageView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(dp(16), dp(0), dp(16), dp(4))
+            }
+            adjustViewBounds = true
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            setImageURI(Uri.fromFile(File(path)))
+            setOnLongClickListener {
+                confirmRemoveAttachment(path)
+                true
+            }
+        }
+
+        val nextEditText = EditText(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(dp(16), dp(0), dp(16), dp(0))
+            }
+            minHeight = dp(0)
+            background = null
+            hint = ""
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                    android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                    android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+            gravity = android.view.Gravity.TOP
+            textSize = 16f
+            setPadding(dp(12), dp(4), dp(12), dp(0))
+
+            setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    activeEditText = this
+                    syncFormattingButtonsToCursor(this)
+                }
+            }
+
+            setOnTouchListener { _, _ ->
+                postDelayed({
+                    syncFormattingButtonsToCursor(this)
+                }, 100)
+                false
+            }
+        }
+
+        mainContainer.addView(imageView, currentIndex + 1)
+        mainContainer.addView(nextEditText, currentIndex + 2)
+
+        activeEditText = nextEditText
+        attachFormattingWatcher(nextEditText)
+
+        // Reset semua formatting state saat insert gambar/coretan
+        isBold = false
+        isItalic = false
+        isUnderline = false
+        isBullet = false
+        updateButtonState(btnBold, false)
+        updateButtonState(btnItalic, false)
+        updateButtonState(btnUnderline, false)
+        updateButtonState(btnList, false)
+
+        nextEditText.setText(textAfterCursor)
+        nextEditText.setSelection(0)
+        nextEditText.requestFocus()
+    }
+
+    private fun spannableToHtml(text: android.text.Spanned): String {
+        val sb = StringBuilder()
+        val str = text.toString()
+        var i = 0
+        while (i < str.length) {
+            val c = str[i]
+            val boldSpans = text.getSpans(i, i + 1, StyleSpan::class.java)
+                .filter { it.style == Typeface.BOLD }
+            val italicSpans = text.getSpans(i, i + 1, StyleSpan::class.java)
+                .filter { it.style == Typeface.ITALIC }
+            val underlineSpans = text.getSpans(i, i + 1, UnderlineSpan::class.java)
+
+            val isBoldHere = boldSpans.isNotEmpty()
+            val isItalicHere = italicSpans.isNotEmpty()
+            val isUnderlineHere = underlineSpans.isNotEmpty()
+
+            if (isBoldHere) sb.append("<b>")
+            if (isItalicHere) sb.append("<i>")
+            if (isUnderlineHere) sb.append("<u>")
+
+            when (c) {
+                '<' -> sb.append("&lt;")
+                '>' -> sb.append("&gt;")
+                '&' -> sb.append("&amp;")
+                '\n' -> sb.append("<br>")
+                else -> sb.append(c)
+            }
+
+            if (isUnderlineHere) sb.append("</u>")
+            if (isItalicHere) sb.append("</i>")
+            if (isBoldHere) sb.append("</b>")
+
+            i++
+        }
+        return sb.toString()
+    }
+
+    private fun htmlToSpannable(html: String): android.text.Spanned {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            android.text.Html.fromHtml(html, android.text.Html.FROM_HTML_MODE_LEGACY)
+        } else {
+            @Suppress("DEPRECATION")
+            android.text.Html.fromHtml(html)
+        }
     }
 }

@@ -20,7 +20,6 @@ class SignupActivity : AppCompatActivity() {
     private lateinit var etPassword: android.widget.EditText
     private lateinit var etConfirmPassword: android.widget.EditText
     private lateinit var btnSignUp: MaterialButton
-    private lateinit var btnGoogle: MaterialButton
     private lateinit var tvLogin: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,7 +41,6 @@ class SignupActivity : AppCompatActivity() {
         etPassword = findViewById(R.id.etPassword)
         etConfirmPassword = findViewById(R.id.etConfirmPassword)
         btnSignUp = findViewById(R.id.btnSignUp)
-        btnGoogle = findViewById(R.id.btnGoogle)
         tvLogin = findViewById(R.id.tvLogin)
     }
 
@@ -66,11 +64,6 @@ class SignupActivity : AppCompatActivity() {
                 }
                 finish()
             }
-        }
-
-        // ini masih pajangan ya
-        btnGoogle.setOnClickListener {
-            Toast.makeText(this, "Google Sign-Up coming soon!", Toast.LENGTH_SHORT).show()
         }
 
         tvLogin.setOnClickListener {

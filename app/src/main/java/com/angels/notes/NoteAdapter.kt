@@ -33,8 +33,12 @@ class NoteAdapter(
         val hasLabel = note.labelName.isNotEmpty()
 
         holder.tvTitle.text = note.judul
-        holder.tvDesc.text = note.isi
-
+        holder.tvDesc.text = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            android.text.Html.fromHtml(note.isi, android.text.Html.FROM_HTML_MODE_LEGACY)
+        } else {
+            @Suppress("DEPRECATION")
+            android.text.Html.fromHtml(note.isi)
+        }
         holder.checkBox.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
         holder.checkBox.isChecked = isSelected
 
