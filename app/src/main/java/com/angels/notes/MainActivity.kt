@@ -1,8 +1,8 @@
 package com.angels.notes
 
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
 import android.widget.ImageButton
@@ -13,16 +13,15 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
-import android.content.Context
+import android.content.res.ColorStateList
 import android.net.Uri
+import android.view.View
+import android.view.WindowInsetsController
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import java.io.File
-import android.content.res.ColorStateList
 import androidx.core.content.ContextCompat
-import android.view.View
-import android.view.WindowInsetsController
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,7 +29,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var topAppBar: MaterialToolbar
     private lateinit var navView: NavigationView
 
-    private val batteryReceiver = BatteryLevelReceiver()
     private var activeProfileImageView: ImageView? = null
 
     private val pickProfilePhotoLauncher =
@@ -58,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.insetsController?.setSystemBarsAppearance(
-                0,  // 0 = icon putih (bukan light)
+                0,
                 WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
             )
         } else {
@@ -76,7 +74,7 @@ class MainActivity : AppCompatActivity() {
 
         topAppBar.post {
             val menuView = topAppBar.getChildAt(topAppBar.childCount - 1)
-            menuView?.setPadding(0, 0, dp(8), 0)  // 8dp dari kanan, ubah sesuai selera
+            menuView?.setPadding(0, 0, dp(8), 0)
         }
 
         if (savedInstanceState == null) {
@@ -95,22 +93,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
-    }
-
-    override fun onStart() {
-        super.onStart()
-        val filter = IntentFilter(Intent.ACTION_BATTERY_LOW)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(batteryReceiver, filter, RECEIVER_EXPORTED)
-        } else {
-            @Suppress("UnspecifiedRegisterReceiverFlag")
-            registerReceiver(batteryReceiver, filter)
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        unregisterReceiver(batteryReceiver)
     }
 
     private fun setupToolbar() {
@@ -132,29 +114,12 @@ class MainActivity : AppCompatActivity() {
     private fun setupNavigationDrawer() {
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_dashboard -> {
-                    openPage(R.id.nav_dashboard, "My Notes", DashboardFragment())
-                }
-
-                R.id.nav_arsip -> {
-                    openPage(R.id.nav_arsip, "Archive", ArchiveFragment())
-                }
-
-                R.id.nav_trash -> {
-                    openPage(R.id.nav_trash, "Trash", TrashFragment())
-                }
-
-                R.id.nav_label -> {
-                    openPage(R.id.nav_label, "Labels", LabelsFragment())
-                }
-
-                R.id.nav_settings -> {
-                    openPage(R.id.nav_settings, "Settings", SettingsFragment())
-                }
-
-                R.id.nav_help -> {
-                    openPage(R.id.nav_help, "Help & Feedback", HelpFragment())
-                }
+                R.id.nav_dashboard -> openPage(R.id.nav_dashboard, "My Notes", DashboardFragment())
+                R.id.nav_arsip -> openPage(R.id.nav_arsip, "Archive", ArchiveFragment())
+                R.id.nav_trash -> openPage(R.id.nav_trash, "Trash", TrashFragment())
+                R.id.nav_label -> openPage(R.id.nav_label, "Labels", LabelsFragment())
+                R.id.nav_settings -> openPage(R.id.nav_settings, "Settings", SettingsFragment())
+                R.id.nav_help -> openPage(R.id.nav_help, "Help & Feedback", HelpFragment())
             }
 
             drawerLayout.closeDrawer(GravityCompat.START)
@@ -196,14 +161,9 @@ class MainActivity : AppCompatActivity() {
 
         tvRemovePhoto.setOnClickListener {
             val savedPhoto = sharedPref.getString("PROFILE_PHOTO_PATH", null)
+            if (!savedPhoto.isNullOrEmpty()) File(savedPhoto).delete()
 
-            if (!savedPhoto.isNullOrEmpty()) {
-                File(savedPhoto).delete()
-            }
-
-            sharedPref.edit()
-                .remove("PROFILE_PHOTO_PATH")
-                .apply()
+            sharedPref.edit().remove("PROFILE_PHOTO_PATH").apply()
 
             imgProfile.setImageResource(R.drawable.ic_person)
             imgProfile.imageTintList = ColorStateList.valueOf(getColor(android.R.color.white))

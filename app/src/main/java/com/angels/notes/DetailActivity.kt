@@ -15,7 +15,6 @@ import android.os.Looper
 import android.text.Editable
 import android.text.Spannable
 import android.text.TextWatcher
-import android.text.style.BulletSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.view.MotionEvent
@@ -44,6 +43,11 @@ import androidx.core.view.WindowInsetsCompat
 import android.widget.ScrollView
 
 class DetailActivity : AppCompatActivity() {
+
+    companion object {
+        private const val IMG_MARK_OPEN = "\u0002IMG:"
+        private const val IMG_MARK_CLOSE = "\u0003"
+    }
 
     private lateinit var toolbar: MaterialToolbar
     private lateinit var etTitle: EditText
@@ -110,7 +114,6 @@ class DetailActivity : AppCompatActivity() {
         setupFormattingButtons()
         setupKeyboardToolbar()
         loadNoteData()
-        renderAttachments()
         setupAutoSave()
         setupTextWatcher()
         updateNoteMeta()
@@ -218,12 +221,7 @@ class DetailActivity : AppCompatActivity() {
             displayDate = noteDate.ifEmpty { getCurrentDisplayDate() }
 
             etTitle.setText(judul)
-            if (isi != null) {
-                etBody.setText(htmlToSpannable(isi))
-            } else {
-                etBody.setText("")
-            }
-            renderAttachments()
+            rebuildBodyContent(isi ?: "")
 
             when {
                 isTrashedNote == 1 -> {
@@ -279,7 +277,7 @@ class DetailActivity : AppCompatActivity() {
 
     private fun setupAutoSave() {
         lastSavedTitle = etTitle.text.toString().trim()
-        lastSavedBody = spannableToHtml(etBody.text).trim()
+        lastSavedBody = collectAllBodyText().trim()
         lastSavedAttachments = serializeAttachments()
 
         val watcher = object : TextWatcher {
@@ -301,13 +299,40 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun updateNoteMeta() {
-        val characterCount = etBody.text.toString().length
+        val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
+        var characterCount = 0
+        for (i in 0 until mainContainer.childCount) {
+            val child = mainContainer.getChildAt(i)
+            if (child is EditText) characterCount += child.text.toString().length
+        }
         tvNoteMeta.text = "$displayDate | $characterCount characters"
+    }
+
+    // Kumpulkan isi dari semua child di mainContainer SESUAI URUTAN ASLINYA
+    // (teks - gambar - teks - gambar dst), bukan teks semua digabung lalu gambar di akhir.
+    private fun collectAllBodyText(): String {
+        val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
+        val sb = StringBuilder()
+        for (i in 0 until mainContainer.childCount) {
+            val child = mainContainer.getChildAt(i)
+            if (child is EditText) {
+                val text = child.text
+                if (text != null && text.isNotEmpty()) {
+                    sb.append(spannableToHtml(text))
+                }
+            } else if (child is ImageView) {
+                val path = child.tag as? String
+                if (path != null) {
+                    sb.append(IMG_MARK_OPEN).append(path).append(IMG_MARK_CLOSE)
+                }
+            }
+        }
+        return sb.toString()
     }
 
     private fun saveNoteAutomatically() {
         val rawTitle = etTitle.text.toString().trim()
-        val body = spannableToHtml(etBody.text).trim()
+        val body = collectAllBodyText().trim()
         val attachments = serializeAttachments()
 
         if (rawTitle.isEmpty() && body.isEmpty() && attachments.isEmpty()) return
@@ -459,7 +484,6 @@ class DetailActivity : AppCompatActivity() {
         editText.addTextChangedListener(object : TextWatcher {
             var wasEnterPressed = false
             var insertPos = -1
-            // Untuk track range teks yang berubah
             var changeStart = -1
             var changeCount = 0
 
@@ -470,7 +494,6 @@ class DetailActivity : AppCompatActivity() {
                     wasEnterPressed = true
                     insertPos = start + 1
                 }
-                // Track posisi dan panjang perubahan (untuk handle suggestion/autocorrect)
                 if (count > 0) {
                     changeStart = start
                     changeCount = count
@@ -490,7 +513,6 @@ class DetailActivity : AppCompatActivity() {
                 val length = s.length
                 if (length == 0) return
 
-                // Pakai changeStart & changeCount supaya suggestion word juga ke-cover
                 val applyStart = if (changeStart >= 0) changeStart else length - 1
                 val applyEnd = if (changeStart >= 0 && changeCount > 0) changeStart + changeCount else length
 
@@ -499,18 +521,15 @@ class DetailActivity : AppCompatActivity() {
 
                 if (safeStart >= safeEnd) return
 
-                // Hapus span lama di range yang berubah
                 val existingStyleSpans = spannable.getSpans(safeStart, safeEnd, StyleSpan::class.java)
                 for (span in existingStyleSpans) spannable.removeSpan(span)
                 val existingUnderlines = spannable.getSpans(safeStart, safeEnd, UnderlineSpan::class.java)
                 for (span in existingUnderlines) spannable.removeSpan(span)
 
-                // Apply span baru di range yang berubah
                 if (isBold) spannable.setSpan(StyleSpan(Typeface.BOLD), safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 if (isItalic) spannable.setSpan(StyleSpan(Typeface.ITALIC), safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                 if (isUnderline) spannable.setSpan(UnderlineSpan(), safeStart, safeEnd, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 
-                // Reset tracker
                 changeStart = -1
                 changeCount = 0
             }
@@ -523,8 +542,6 @@ class DetailActivity : AppCompatActivity() {
         if (selStart < 0) return
         val spannable = editText.text as? Spannable ?: return
 
-        // Kalau ada selection, cek span di range selection
-        // Kalau tidak, cek 1 karakter sebelum kursor
         val checkStart = if (selStart != selEnd) selStart else if (selStart > 0) selStart - 1 else selStart
         val checkEnd = if (selStart != selEnd) selEnd else selStart
 
@@ -533,7 +550,6 @@ class DetailActivity : AppCompatActivity() {
         isItalic = styleSpans.any { it.style == Typeface.ITALIC }
         isUnderline = spannable.getSpans(checkStart, checkEnd, UnderlineSpan::class.java).isNotEmpty()
 
-        // Cek bullet di baris kursor
         val text = editText.text.toString()
         val lastNewLine = if (selStart > 0) text.lastIndexOf('\n', selStart - 1) else -1
         val lineStart = if (lastNewLine != -1) lastNewLine + 1 else 0
@@ -546,43 +562,144 @@ class DetailActivity : AppCompatActivity() {
         updateButtonState(btnUnderline, isUnderline)
         updateButtonState(btnList, isBullet)
     }
+
     private fun addAttachment(path: String) {
         insertImageAtCursor(path)
         currentAttachments.add(path)
         scheduleAutoSave()
     }
 
-    private fun renderAttachments() {
+    // Membuat ulang konten body (teks + gambar) sesuai urutan yang disimpan di "savedHtml".
+    // Dipanggil pas note dibuka, supaya gambar dan teks di bawahnya tetap di posisi yang benar
+    // (bukan semua teks ditumpuk di atas baru semua gambar di bawah).
+    private fun rebuildBodyContent(savedHtml: String) {
         val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
 
         for (i in mainContainer.childCount - 1 downTo 0) {
-            if (mainContainer.getChildAt(i) is ImageView) {
+            val child = mainContainer.getChildAt(i)
+            if (child is ImageView || (child is EditText && child !== etBody)) {
                 mainContainer.removeViewAt(i)
             }
         }
+        etBody.setText("")
+        activeEditText = etBody
 
-        val bodyIndex = mainContainer.indexOfChild(etBody)
-        var insertIndex = bodyIndex + 1
+        if (savedHtml.isEmpty()) {
+            return
+        }
 
-        currentAttachments.forEach { path ->
-            val imageView = ImageView(this).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    setMargins(dp(16), dp(0), dp(16), dp(4))
-                }
-                adjustViewBounds = true
-                scaleType = ImageView.ScaleType.FIT_CENTER
-                setImageURI(Uri.fromFile(File(path)))
-                setOnLongClickListener {
-                    confirmRemoveAttachment(path)
-                    true
+        if (!savedHtml.contains(IMG_MARK_OPEN)) {
+            etBody.setText(htmlToSpannable(savedHtml))
+            currentAttachments.forEach { path -> appendImageView(path) }
+            return
+        }
+
+        val regex = Regex(Regex.escape(IMG_MARK_OPEN) + "(.*?)" + Regex.escape(IMG_MARK_CLOSE))
+        var lastIndex = 0
+        var isFirstTextSegment = true
+        var lastTarget: EditText = etBody
+
+        for (match in regex.findAll(savedHtml)) {
+            val textPart = savedHtml.substring(lastIndex, match.range.first)
+            lastTarget = if (isFirstTextSegment) {
+                etBody.setText(htmlToSpannable(textPart))
+                etBody
+            } else {
+                appendBodyEditText(textPart)
+            }
+            isFirstTextSegment = false
+
+            val path = match.groupValues[1]
+            if (File(path).exists()) {
+                appendImageView(path)
+            }
+            lastIndex = match.range.last + 1
+        }
+
+        val remaining = savedHtml.substring(lastIndex)
+        lastTarget = if (isFirstTextSegment) {
+            etBody.setText(htmlToSpannable(remaining))
+            etBody
+        } else {
+            appendBodyEditText(remaining)
+        }
+
+        activeEditText = lastTarget
+    }
+
+    // Bikin EditText baru buat teks setelah gambar, lengkap dengan semua watcher
+    // (format, auto save), terus ditempel di akhir mainContainer.
+    private fun appendBodyEditText(initialHtml: String): EditText {
+        val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
+        val newEditText = EditText(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(dp(16), dp(0), dp(16), dp(0))
+            }
+            minHeight = dp(0)
+            background = null
+            hint = ""
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or
+                    android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                    android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+            gravity = android.view.Gravity.TOP
+            textSize = 16f
+            setPadding(dp(12), dp(4), dp(12), dp(0))
+
+            setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    activeEditText = this
+                    syncFormattingButtonsToCursor(this)
                 }
             }
-            mainContainer.addView(imageView, insertIndex)
-            insertIndex++
+
+            setOnTouchListener { _, _ ->
+                postDelayed({
+                    syncFormattingButtonsToCursor(this)
+                }, 100)
+                false
+            }
         }
+
+        mainContainer.addView(newEditText)
+        attachFormattingWatcher(newEditText)
+        newEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                updateNoteMeta()
+                scheduleAutoSave()
+            }
+        })
+
+        if (initialHtml.isNotEmpty()) {
+            newEditText.setText(htmlToSpannable(initialHtml))
+        }
+        return newEditText
+    }
+
+    // Bikin ImageView buat satu attachment dan ditempel di akhir mainContainer.
+    private fun appendImageView(path: String) {
+        val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
+        val imageView = ImageView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(dp(16), dp(0), dp(16), dp(4))
+            }
+            adjustViewBounds = true
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            setImageURI(Uri.fromFile(File(path)))
+            tag = path
+            setOnLongClickListener {
+                confirmRemoveAttachment(path)
+                true
+            }
+        }
+        mainContainer.addView(imageView)
     }
 
     private fun confirmRemoveAttachment(path: String) {
@@ -590,8 +707,15 @@ class DetailActivity : AppCompatActivity() {
             .setTitle("Remove attachment?")
             .setMessage("This photo or drawing will be removed from this note.")
             .setPositiveButton("Remove") { _, _ ->
+                val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
+                for (i in mainContainer.childCount - 1 downTo 0) {
+                    val child = mainContainer.getChildAt(i)
+                    if (child is ImageView && child.tag == path) {
+                        mainContainer.removeViewAt(i)
+                    }
+                }
                 currentAttachments.remove(path)
-                renderAttachments()
+                updateNoteMeta()
                 scheduleAutoSave()
             }
             .setNegativeButton("Cancel", null)
@@ -664,7 +788,15 @@ class DetailActivity : AppCompatActivity() {
     }
 
     private fun serializeAttachments(): String {
-        return currentAttachments.joinToString("\n")
+        val mainContainer = findViewById<LinearLayout>(R.id.mainContainer)
+        val paths = mutableListOf<String>()
+        for (i in 0 until mainContainer.childCount) {
+            val child = mainContainer.getChildAt(i)
+            if (child is ImageView) {
+                (child.tag as? String)?.let { paths.add(it) }
+            }
+        }
+        return paths.joinToString("\n")
     }
 
     private fun dp(value: Int): Int {
@@ -732,7 +864,6 @@ class DetailActivity : AppCompatActivity() {
 
         val textAfterCursor = fullText.substring(cursorPosition)
 
-        // FIX: Pakai delete() bukan setText() supaya span sebelum kursor tetap terjaga
         if (cursorPosition < currentEditText.text.length) {
             currentEditText.text.delete(cursorPosition, currentEditText.text.length)
         }
@@ -750,6 +881,7 @@ class DetailActivity : AppCompatActivity() {
             adjustViewBounds = true
             scaleType = ImageView.ScaleType.FIT_CENTER
             setImageURI(Uri.fromFile(File(path)))
+            tag = path
             setOnLongClickListener {
                 confirmRemoveAttachment(path)
                 true
@@ -794,7 +926,16 @@ class DetailActivity : AppCompatActivity() {
         activeEditText = nextEditText
         attachFormattingWatcher(nextEditText)
 
-        // Reset semua formatting state saat insert gambar/coretan
+        // Pasang watcher auto save ke nextEditText juga
+        nextEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                updateNoteMeta()
+                scheduleAutoSave()
+            }
+        })
+
         isBold = false
         isItalic = false
         isUnderline = false
