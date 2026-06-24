@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Gambar foto -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M21,19V5C21,3.9 20.1,3 19,3H5C3.9,3 3,3.9 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19ZM8.5,13.5L11,16.51L14.5,12L19,18H5L8.5,13.5Z"/>
+    <!-- Tanda + dengan circle background -->
+    <circle
+        android:fillColor="#FF000000"
+        cx="17"
+        cy="7"
+        r="3.5"/>
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M17,5.5V8.5M15.5,7H18.5"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"/>
+</vector>

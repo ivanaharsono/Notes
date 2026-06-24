@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
+
+    <View
+        android:id="@+id/statusBarBackground"
+        android:layout_width="0dp"
+        android:layout_height="24dp"
+        android:background="@color/IndigoBlue"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@android:color/white"
+        android:gravity="center_vertical"
+        android:minHeight="?attr/actionBarSize"
+        app:contentInsetStartWithNavigation="0dp"
+        app:elevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/statusBarBackground"
+        app:navigationIcon="@drawable/ic_back"
+        app:navigationIconTint="@android:color/black"
+        app:title="Edit Note"
+        app:titleMarginStart="8dp"
+        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium"
+        app:titleTextColor="@android:color/black" />
+
+    <ScrollView
+        android:id="@+id/mainScrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintBottom_toTopOf="@+id/formatScrollView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/mainContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTitle"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="16dp"
+                android:hint="Title">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_bold"
+                    android:inputType="text"
+                    android:maxLines="2"
+                    android:textSize="18sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tvNoteMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/inter_regular"
+                android:text="June 21 14:29 | 0 characters"
+                android:textColor="@color/gray_text"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="0dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="0dp"
+                android:background="@android:color/transparent"
+                android:fontFamily="@font/inter_regular"
+                android:gravity="top"
+                android:hint="Start writing..."
+                android:inputType="textMultiLine|textCapSentences"
+                android:lineSpacingExtra="4dp"
+                android:paddingStart="12dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="0dp"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:id="@+id/dynamicContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <HorizontalScrollView
+        android:id="@+id/formatScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="#F0F0F0"
+        android:scrollbars="none"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="4dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBold"
+                style="@style/FormatToggleButton"
+                android:checkable="true"
+                android:contentDescription="Bold"
+                app:icon="@drawable/ic_format_bold"
+                app:iconGravity="textStart"
+                app:iconTint="@color/ic_tint_selector" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnItalic"
+                style="@style/FormatToggleButton"
+                android:checkable="true"
+                android:contentDescription="Italic"
+                app:icon="@drawable/ic_format_italic"
+                app:iconGravity="textStart"
+                app:iconTint="@color/ic_tint_selector" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUnderline"
+                style="@style/FormatToggleButton"
+                android:checkable="true"
+                android:contentDescription="Underline"
+                app:icon="@drawable/ic_format_underline"
+                app:iconGravity="textStart"
+                app:iconTint="@color/ic_tint_selector" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnList"
+                style="@style/FormatToggleButton"
+                android:checkable="true"
+                android:contentDescription="Bulleted list"
+                app:icon="@drawable/ic_format_list_bulleted"
+                app:iconGravity="textStart"
+                app:iconTint="@color/ic_tint_selector" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAddImage"
+                style="@style/FormatToggleButton"
+                android:contentDescription="Add photo"
+                app:icon="@drawable/ic_add_photo"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="@color/ic_tint_selector" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDrawing"
+                style="@style/FormatToggleButton"
+                android:contentDescription="Drawing"
+                app:icon="@drawable/ic_draw"
+                app:iconGravity="textStart"
+                app:iconTint="@color/ic_tint_selector" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
