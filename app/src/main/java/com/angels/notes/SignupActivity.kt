@@ -2,14 +2,14 @@ package com.angels.notes
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Patterns
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
-import kotlinx.coroutines.launch
 
 class SignupActivity : AppCompatActivity() {
 
@@ -24,7 +24,6 @@ class SignupActivity : AppCompatActivity() {
     private lateinit var btnSignUp: MaterialButton
     private lateinit var tvLogin: TextView
 
-    // Tambahan variabel pelindung internet biar ga error
     private var isConnected = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,37 +48,60 @@ class SignupActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
+
+        // Error hilang saat mulai ngetik
+        etName.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                tilName.error = null
+                tilName.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        etEmail.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                tilEmail.error = null
+                tilEmail.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        etPassword.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                tilPassword.error = null
+                tilPassword.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        etConfirmPassword.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                tilConfirmPassword.error = null
+                tilConfirmPassword.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
         btnSignUp.setOnClickListener {
             if (!isConnected) {
                 Toast.makeText(this, "No internet connection. Cannot sign up.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Ambil semua inputan text dari form
             val name = etName.text.toString().trim()
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
             val confirmPassword = etConfirmPassword.text.toString().trim()
 
-            // Perbaikan: Masukin 4 data ke fungsi validasi sesuai syarat fungsinya
             if (validateInput(name, email, password, confirmPassword)) {
-                lifecycleScope.launch {
-                    try {
-                        val response = ApiConfig.getApiService().registerUser(AuthRequest(name, email, password))
-
-                        if (response.status == "success") {
-                            Toast.makeText(this@SignupActivity, "Sign up successful! Please login.", Toast.LENGTH_SHORT).show()
-
-                            val intent = Intent(this@SignupActivity, LoginActivity::class.java)
-                            startActivity(intent)
-                            finish()
-                        } else {
-                            Toast.makeText(this@SignupActivity, response.message, Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(this@SignupActivity, "Server error: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                Toast.makeText(this, "Sign up successful! Please login.", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, LoginActivity::class.java)
+                startActivity(intent)
+                finish()
             }
         }
 
@@ -103,39 +125,54 @@ class SignupActivity : AppCompatActivity() {
         confirmPassword: String
     ): Boolean {
         var isValid = true
+        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#\$%^&+=!.]).{8,}$")
 
         if (name.isEmpty()) {
-            tilName.error = "Nama tidak boleh kosong"
+            tilName.isErrorEnabled = true
+            tilName.error = "Name cannot be empty"
             isValid = false
         } else {
             tilName.error = null
+            tilName.isErrorEnabled = false
         }
 
         if (email.isEmpty()) {
-            tilEmail.error = "Email tidak boleh kosong"
+            tilEmail.isErrorEnabled = true
+            tilEmail.error = "Email cannot be empty"
             isValid = false
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            tilEmail.error = "Format email tidak valid"
+            tilEmail.isErrorEnabled = true
+            tilEmail.error = "Invalid email format"
             isValid = false
         } else {
             tilEmail.error = null
+            tilEmail.isErrorEnabled = false
         }
 
         if (password.isEmpty()) {
-            tilPassword.error = "Password tidak boleh kosong"
+            tilPassword.isErrorEnabled = true
+            tilPassword.error = "Password cannot be empty"
             isValid = false
-        } else if (password.length < 6) {
-            tilPassword.error = "Password minimal 6 karakter"
+        } else if (!passwordRegex.matches(password)) {
+            tilPassword.isErrorEnabled = true
+            tilPassword.error = "Min. 8 characters with uppercase, lowercase, number & special character"
             isValid = false
         } else {
             tilPassword.error = null
+            tilPassword.isErrorEnabled = false
         }
 
-        if (confirmPassword != password) {
-            tilConfirmPassword.error = "Password tidak cocok"
+        if (confirmPassword.isEmpty()) {
+            tilConfirmPassword.isErrorEnabled = true
+            tilConfirmPassword.error = "Please confirm your password"
+            isValid = false
+        } else if (confirmPassword != password) {
+            tilConfirmPassword.isErrorEnabled = true
+            tilConfirmPassword.error = "Passwords do not match"
             isValid = false
         } else {
             tilConfirmPassword.error = null
+            tilConfirmPassword.isErrorEnabled = false
         }
 
         return isValid

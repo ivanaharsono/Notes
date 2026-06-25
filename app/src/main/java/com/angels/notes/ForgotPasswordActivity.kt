@@ -18,76 +18,56 @@ class ForgotPasswordActivity : AppCompatActivity() {
     private lateinit var btnSendReset: MaterialButton
     private lateinit var tvBackToLogin: TextView
     private lateinit var btnBack: ImageButton
+    private var fromChangePassword: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_forgotpassword)
 
-        setupViews()
-        setupClickListeners()
-    }
+        fromChangePassword = intent.getBooleanExtra("FROM_CHANGE_PASSWORD", false)
 
-    private fun setupViews() {
-        // cari id-nya dari layout dulu ya
         tilEmail = findViewById(R.id.tilEmail)
         etEmail = findViewById(R.id.etEmail)
         btnSendReset = findViewById(R.id.btnSendReset)
         tvBackToLogin = findViewById(R.id.tvBackToLogin)
         btnBack = findViewById(R.id.btnBack)
-    }
 
-    private fun setupClickListeners() {
+        if (fromChangePassword) {
+            findViewById<TextView>(R.id.tvRemember).visibility = android.view.View.GONE
+            tvBackToLogin.visibility = android.view.View.GONE
+        }
+
         btnSendReset.setOnClickListener {
             val email = etEmail.text.toString().trim()
             if (validateEmail(email)) {
-                // TODO: kirim email reset password di sini
-                Toast.makeText(this, "Link reset sudah dikirim ke email kamu!", Toast.LENGTH_SHORT).show()
-                // abis submit kita balikkan ke login ya biar user bisa masuk pake pass baru
-                tvBackToLogin.performClick()
+                // Langsung pindah ke OTP, toast nanti di OtpActivity
+                val intent = Intent(this, OtpActivity::class.java)
+                intent.putExtra("EMAIL", email)
+                intent.putExtra("FROM_CHANGE_PASSWORD", fromChangePassword)
+                startActivity(intent)
+                // TIDAK finish() di sini, biar user bisa back ke sini kalau perlu
             }
         }
 
         tvBackToLogin.setOnClickListener {
-            // balik ke halaman login
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, android.R.anim.fade_in, android.R.anim.fade_out)
-            } else {
-                @Suppress("DEPRECATION")
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-            }
             finish()
         }
 
         btnBack.setOnClickListener {
-            // sama kayak tvBackToLogin, tinggal panggil aja
-            tvBackToLogin.performClick()
+            finish()
         }
     }
 
     private fun validateEmail(email: String): Boolean {
-        // mastiin email-nya gak kosong dan formatnya bener
         return if (email.isEmpty()) {
-            tilEmail.error = "Email tidak boleh kosong"
+            tilEmail.error = "Email cannot be empty"
             false
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            tilEmail.error = "Format email tidak valid"
+            tilEmail.error = "Invalid email format"
             false
         } else {
             tilEmail.error = null
             true
-        }
-    }
-
-    // ini biar pas pindah halaman ada efek fade yang halus
-    override fun finish() {
-        super.finish()
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, android.R.anim.fade_in, android.R.anim.fade_out)
-        } else {
-            @Suppress("DEPRECATION")
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
     }
 }

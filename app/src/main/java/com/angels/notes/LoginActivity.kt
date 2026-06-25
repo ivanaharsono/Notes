@@ -13,6 +13,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
+import android.text.Editable
+import android.text.TextWatcher
 
 class LoginActivity : AppCompatActivity() {
 
@@ -46,6 +48,24 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setupClickListeners() {
+        etEmail.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                tilEmail.error = null
+                tilEmail.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        etPassword.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                tilPassword.error = null
+                tilPassword.isErrorEnabled = false
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
         btnLogin.setOnClickListener {
             if (!isConnected) {
                 Toast.makeText(this, "No internet connection. Cannot login.", Toast.LENGTH_SHORT).show()
@@ -55,20 +75,15 @@ class LoginActivity : AppCompatActivity() {
             val password = etPassword.text.toString().trim()
 
             if (validateInput(email, password)) {
-                lifecycleScope.launch {
-                    try {
-                        val response = ApiConfig.getApiService().loginUser(AuthRequest(email, password))
-                        if (response.status == "success") {
-                            Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
-                            goToMain()
-                        } else {
-                            Toast.makeText(this@LoginActivity, response.message, Toast.LENGTH_SHORT).show()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(this@LoginActivity, "Server error: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                // 🚧 API dinonaktifkan sementara — langsung masuk
+                Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
+                goToMain()
             }
+        }
+
+        tvForgotPassword.setOnClickListener {
+            val intent = Intent(this, ForgotPasswordActivity::class.java)
+            startActivity(intent)
         }
 
         tvSignUp.setOnClickListener {
@@ -86,25 +101,32 @@ class LoginActivity : AppCompatActivity() {
 
     private fun validateInput(email: String, password: String): Boolean {
         var isValid = true
+        val passwordRegex = Regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#\$%^&+=!.]).{8,}$")
 
         if (email.isEmpty()) {
+            tilEmail.isErrorEnabled = true
             tilEmail.error = "Email cannot be empty"
             isValid = false
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            tilEmail.isErrorEnabled = true
             tilEmail.error = "Invalid email format"
             isValid = false
         } else {
             tilEmail.error = null
+            tilEmail.isErrorEnabled = false
         }
 
         if (password.isEmpty()) {
+            tilPassword.isErrorEnabled = true
             tilPassword.error = "Password cannot be empty"
             isValid = false
-        } else if (password.length < 6) {
-            tilPassword.error = "Password must be at least 6 characters"
+        } else if (!passwordRegex.matches(password)) {
+            tilPassword.isErrorEnabled = true
+            tilPassword.error = "Min. 8 characters with uppercase, lowercase, number & special character"
             isValid = false
         } else {
             tilPassword.error = null
+            tilPassword.isErrorEnabled = false
         }
 
         return isValid

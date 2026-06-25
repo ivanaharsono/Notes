@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Saat focused (aktif diketik) — putih dengan border biru tebal -->
+    <item android:state_focused="true">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/white" />
+            <stroke android:width="2.5dp" android:color="@color/IndigoBlue" />
+            <size android:width="40dp" android:height="40dp" />
+        </shape>
+    </item>
+
+    <!-- Saat sudah terisi — putih dengan border biru -->
+    <item android:state_selected="true">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/white" />
+            <stroke android:width="2.5dp" android:color="@color/IndigoBlue" />
+            <size android:width="40dp" android:height="40dp" />
+        </shape>
+    </item>
+
+    <!-- Default kosong — putih dengan border biru tipis -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@android:color/white" />
+            <stroke android:width="2dp" android:color="@color/IndigoBlue" />
+            <size android:width="40dp" android:height="40dp" />
+        </shape>
+    </item>
+
+</selector>

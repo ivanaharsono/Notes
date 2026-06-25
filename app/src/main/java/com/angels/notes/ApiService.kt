@@ -20,16 +20,16 @@ interface ApiService {
     ): FeedbackResponse
 }
 
-// 📦 Model Data Paket Kiriman (Request) & Terima (Response)
 data class AuthRequest(
-    val email: String,
-    val javaPassword: String // Sesuaikan nama variabelnya dengan skema backend/database lu
-)
-
-data class AuthRequest(
-    val fullName: String? = null, // Tambahin baris ini
+    val fullName: String? = null,
     val email: String,
     val javaPassword: String
+)
+
+data class AuthResponse(
+    val status: String,
+    val message: String,
+    val token: String? = null
 )
 
 data class FeedbackRequest(

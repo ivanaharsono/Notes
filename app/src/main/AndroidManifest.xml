@@ -39,7 +39,15 @@
         <activity
             android:name=".MainActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".OtpActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NewPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ChangePasswordActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

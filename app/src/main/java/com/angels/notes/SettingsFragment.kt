@@ -67,7 +67,7 @@ class SettingsFragment : Fragment() {
 
     private fun setupChangePassword(view: View) {
         view.findViewById<View>(R.id.itemChangePassword).setOnClickListener {
-            startActivity(Intent(requireContext(), ForgotPasswordActivity::class.java))
+            startActivity(Intent(requireContext(), ChangePasswordActivity::class.java))
         }
     }
 
