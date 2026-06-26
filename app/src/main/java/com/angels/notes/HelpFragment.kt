@@ -49,8 +49,9 @@ class HelpFragment : Fragment() {
 
     private fun setupFeedback(view: View) {
         val etFeedback: TextInputEditText = view.findViewById(R.id.etFeedback)
+        val btnSendFeedback: View = view.findViewById(R.id.btnSendFeedback)
 
-        view.findViewById<View>(R.id.btnSendFeedback).setOnClickListener {
+        btnSendFeedback.setOnClickListener {
             val feedback = etFeedback.text.toString().trim()
 
             if (feedback.isEmpty()) {
@@ -58,35 +59,35 @@ class HelpFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // 1. Ambil email user yang lagi login dari session SharedPreferences UI
+            // Ambil email user yang lagi login dari session
             val sharedPref = requireActivity().getSharedPreferences("UserSession", Context.MODE_PRIVATE)
             val email = sharedPref.getString("USER_EMAIL", "") ?: ""
 
-            // 2. Tembak ke API Backend menggunakan Coroutine
+            // Tembak ke API Backend
+            btnSendFeedback.isEnabled = false   // loading: cegah double-tap
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
-                    // Kirim paket data (Email & Pesan Feedback) ke server Hugging Face
-                    val response = ApiConfig.getApiService().sendFeedback(FeedbackRequest(email, feedback))
+                    val response = ApiConfig.getApiService()
+                        .sendFeedback(FeedbackRequest(email, feedback))
 
-                    // 3. Cek respon dari database server
                     if (response.status == "success") {
                         Toast.makeText(
                             requireContext(),
                             "Thank you! Feedback sent successfully.",
                             Toast.LENGTH_LONG
                         ).show()
-                        etFeedback.text?.clear() // Kosongkan form input
+                        etFeedback.text?.clear()
                     } else {
-                        // Jika server menolak (misal format error)
                         Toast.makeText(requireContext(), response.message, Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
-                    // Jika koneksi internet putus atau server backend lu lagi tewas
                     Toast.makeText(
                         requireContext(),
                         "Failed to send feedback: ${e.message}",
                         Toast.LENGTH_LONG
                     ).show()
+                } finally {
+                    btnSendFeedback.isEnabled = true
                 }
             }
         }

@@ -8,8 +8,10 @@ import android.util.Patterns
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.launch
 
 class SignupActivity : AppCompatActivity() {
 
@@ -25,6 +27,7 @@ class SignupActivity : AppCompatActivity() {
     private lateinit var tvLogin: TextView
 
     private var isConnected = true
+    private var defaultBtnText: CharSequence = "Sign Up"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,11 +48,12 @@ class SignupActivity : AppCompatActivity() {
         etConfirmPassword = findViewById(R.id.etConfirmPassword)
         btnSignUp = findViewById(R.id.btnSignUp)
         tvLogin = findViewById(R.id.tvLogin)
+
+        defaultBtnText = btnSignUp.text
     }
 
     private fun setupClickListeners() {
 
-        // Error hilang saat mulai ngetik
         etName.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -98,10 +102,7 @@ class SignupActivity : AppCompatActivity() {
             val confirmPassword = etConfirmPassword.text.toString().trim()
 
             if (validateInput(name, email, password, confirmPassword)) {
-                Toast.makeText(this, "Sign up successful! Please login.", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, LoginActivity::class.java)
-                startActivity(intent)
-                finish()
+                signUpToServer(name, email, password)
             }
         }
 
@@ -116,6 +117,41 @@ class SignupActivity : AppCompatActivity() {
             }
             finish()
         }
+    }
+
+    // 🔗 PANGGIL API SIGNUP -> backend kirim OTP ke email -> buka OtpActivity
+    private fun signUpToServer(name: String, email: String, password: String) {
+        setLoading(true)
+        lifecycleScope.launch {
+            try {
+                val response = ApiConfig.getApiService()
+                    .signup(SignupRequest(name, email, password))
+
+                if (response.status == "success") {
+                    Toast.makeText(this@SignupActivity, response.message, Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this@SignupActivity, OtpActivity::class.java)
+                    intent.putExtra("EMAIL", email)
+                    intent.putExtra("FLOW", "signup")   // tandai ini alur pendaftaran
+                    startActivity(intent)
+                } else {
+                    // contoh: "Email sudah terdaftar!"
+                    Toast.makeText(this@SignupActivity, response.message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@SignupActivity,
+                    "Gagal terhubung ke server: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        btnSignUp.isEnabled = !isLoading
+        btnSignUp.text = if (isLoading) "Please wait..." else defaultBtnText
     }
 
     private fun validateInput(

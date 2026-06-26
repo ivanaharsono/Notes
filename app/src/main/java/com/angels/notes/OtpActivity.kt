@@ -6,10 +6,11 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.KeyEvent
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.launch
 
 class OtpActivity : AppCompatActivity() {
 
@@ -17,6 +18,8 @@ class OtpActivity : AppCompatActivity() {
     private lateinit var btnVerify: MaterialButton
     private var email: String = ""
     private var fromChangePassword: Boolean = false
+    private var flow: String = "reset"   // "signup" atau "reset"
+    private var defaultBtnText: CharSequence = "Verify"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +27,7 @@ class OtpActivity : AppCompatActivity() {
 
         email = intent.getStringExtra("EMAIL") ?: ""
         fromChangePassword = intent.getBooleanExtra("FROM_CHANGE_PASSWORD", false)
+        flow = intent.getStringExtra("FLOW") ?: "reset"
 
         otpBoxes = listOf(
             findViewById(R.id.etOtp1),
@@ -34,6 +38,7 @@ class OtpActivity : AppCompatActivity() {
             findViewById(R.id.etOtp6)
         )
         btnVerify = findViewById(R.id.btnVerify)
+        defaultBtnText = btnVerify.text
 
         setupOtpBoxes()
 
@@ -42,19 +47,63 @@ class OtpActivity : AppCompatActivity() {
             if (otp.length < 6) {
                 Toast.makeText(this, "Masukkan semua 6 digit kode OTP", Toast.LENGTH_SHORT).show()
             } else {
-                // 🚧 Bypass verifikasi sementara — nanti temen lo handle API-nya
-                val intent = Intent(this, NewPasswordActivity::class.java)
-                intent.putExtra("EMAIL", email)
-                intent.putExtra("FROM_CHANGE_PASSWORD", fromChangePassword)
-                startActivity(intent)
+                if (flow == "signup") {
+                    verifySignupOtp(otp)
+                } else {
+                    // Alur reset: OTP divalidasi nanti di langkah reset-password,
+                    // jadi cukup teruskan kode-nya ke NewPasswordActivity.
+                    goToNewPassword(otp)
+                }
             }
         }
 
         findViewById<android.widget.ImageButton>(R.id.btnBack).setOnClickListener { finish() }
 
-        // Fokus ke kotak pertama otomatis
         otpBoxes[0].requestFocus()
         otpBoxes.forEach { it.setTextColor(android.graphics.Color.BLACK) }
+    }
+
+    // 🔗 ALUR SIGNUP: cek OTP ke backend, kalau benar -> akun aktif -> Login
+    private fun verifySignupOtp(otp: String) {
+        setLoading(true)
+        lifecycleScope.launch {
+            try {
+                val response = ApiConfig.getApiService()
+                    .verifyOtp(VerifyOtpRequest(email, otp))
+
+                if (response.status == "success") {
+                    Toast.makeText(this@OtpActivity, response.message, Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this@OtpActivity, LoginActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                } else {
+                    // "OTP salah atau sudah kedaluwarsa."
+                    Toast.makeText(this@OtpActivity, response.message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@OtpActivity,
+                    "Gagal terhubung ke server: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    private fun goToNewPassword(otp: String) {
+        val intent = Intent(this, NewPasswordActivity::class.java)
+        intent.putExtra("EMAIL", email)
+        intent.putExtra("OTP", otp)
+        intent.putExtra("FROM_CHANGE_PASSWORD", fromChangePassword)
+        startActivity(intent)
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        btnVerify.isEnabled = !isLoading
+        btnVerify.text = if (isLoading) "Verifying..." else defaultBtnText
     }
 
     private fun setupOtpBoxes() {

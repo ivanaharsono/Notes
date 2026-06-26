@@ -1,16 +1,19 @@
 package com.angels.notes
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import android.content.Intent
-import android.widget.TextView
+import kotlinx.coroutines.launch
 
 class ChangePasswordActivity : AppCompatActivity() {
 
@@ -21,6 +24,8 @@ class ChangePasswordActivity : AppCompatActivity() {
     private lateinit var etNewPassword: TextInputEditText
     private lateinit var etConfirmPassword: TextInputEditText
     private lateinit var btnSave: MaterialButton
+
+    private var defaultBtnText: CharSequence = "Save"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,8 +38,8 @@ class ChangePasswordActivity : AppCompatActivity() {
         etNewPassword = findViewById(R.id.etNewPassword)
         etConfirmPassword = findViewById(R.id.etConfirmPassword)
         btnSave = findViewById(R.id.btnSave)
+        defaultBtnText = btnSave.text
 
-        // Error langsung hilang saat user mulai ngetik
         etOldPassword.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -68,9 +73,7 @@ class ChangePasswordActivity : AppCompatActivity() {
             val confirmPassword = etConfirmPassword.text.toString()
 
             if (validatePasswords(oldPassword, newPassword, confirmPassword)) {
-                // 🚧 Verifikasi old password ke backend belum terhubung — nanti temen lo handle API-nya
-                Toast.makeText(this, "Password changed successfully!", Toast.LENGTH_SHORT).show()
-                finish()
+                changePasswordOnServer(oldPassword, newPassword)
             }
         }
 
@@ -81,6 +84,47 @@ class ChangePasswordActivity : AppCompatActivity() {
             intent.putExtra("FROM_CHANGE_PASSWORD", true)
             startActivity(intent)
         }
+    }
+
+    // 🔗 PANGGIL API CHANGE PASSWORD (email sesi + password lama + password baru)
+    private fun changePasswordOnServer(oldPassword: String, newPassword: String) {
+        val sharedPref = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+        val email = sharedPref.getString("USER_EMAIL", "") ?: ""
+
+        if (email.isEmpty()) {
+            Toast.makeText(this, "Sesi tidak ditemukan, silakan login ulang.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        setLoading(true)
+        lifecycleScope.launch {
+            try {
+                val response = ApiConfig.getApiService()
+                    .changePassword(ChangePasswordRequest(email, oldPassword, newPassword))
+
+                if (response.status == "success") {
+                    Toast.makeText(this@ChangePasswordActivity, response.message, Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    // contoh: "Password lama salah!"
+                    tilOldPassword.isErrorEnabled = true
+                    tilOldPassword.error = response.message
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@ChangePasswordActivity,
+                    "Gagal terhubung ke server: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        btnSave.isEnabled = !isLoading
+        btnSave.text = if (isLoading) "Please wait..." else defaultBtnText
     }
 
     private fun validatePasswords(old: String, new: String, confirm: String): Boolean {

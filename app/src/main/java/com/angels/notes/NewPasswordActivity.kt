@@ -7,9 +7,11 @@ import android.text.TextWatcher
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.launch
 
 class NewPasswordActivity : AppCompatActivity() {
 
@@ -18,21 +20,27 @@ class NewPasswordActivity : AppCompatActivity() {
     private lateinit var etNewPassword: TextInputEditText
     private lateinit var etConfirmPassword: TextInputEditText
     private lateinit var btnSave: MaterialButton
+
     private var fromChangePassword: Boolean = false
+    private var email: String = ""
+    private var otp: String = ""
+    private var defaultBtnText: CharSequence = "Save"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_password)
 
         fromChangePassword = intent.getBooleanExtra("FROM_CHANGE_PASSWORD", false)
+        email = intent.getStringExtra("EMAIL") ?: ""
+        otp = intent.getStringExtra("OTP") ?: ""
 
         tilNewPassword = findViewById(R.id.tilNewPassword)
         tilConfirmPassword = findViewById(R.id.tilConfirmPassword)
         etNewPassword = findViewById(R.id.etNewPassword)
         etConfirmPassword = findViewById(R.id.etConfirmPassword)
         btnSave = findViewById(R.id.btnSave)
+        defaultBtnText = btnSave.text
 
-        // Error langsung hilang saat user mulai ngetik
         etNewPassword.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -56,23 +64,57 @@ class NewPasswordActivity : AppCompatActivity() {
             val confirmPassword = etConfirmPassword.text.toString()
 
             if (validatePasswords(newPassword, confirmPassword)) {
-                Toast.makeText(this, "Password changed successfully!", Toast.LENGTH_SHORT).show()
-
-                if (fromChangePassword) {
-                    // Balik ke halaman Settings, bukan Login, karena user masih dalam sesi yang sama
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("OPEN_SETTINGS", true)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                } else {
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                }
+                resetPasswordOnServer(newPassword)
             }
         }
 
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
+    }
+
+    // 🔗 PANGGIL API RESET PASSWORD (email + otp + password baru)
+    private fun resetPasswordOnServer(newPassword: String) {
+        setLoading(true)
+        lifecycleScope.launch {
+            try {
+                val response = ApiConfig.getApiService()
+                    .resetPassword(ResetPasswordRequest(email, otp, newPassword))
+
+                if (response.status == "success") {
+                    Toast.makeText(this@NewPasswordActivity, response.message, Toast.LENGTH_SHORT).show()
+                    navigateAfterReset()
+                } else {
+                    // "OTP salah atau sudah kedaluwarsa."
+                    Toast.makeText(this@NewPasswordActivity, response.message, Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@NewPasswordActivity,
+                    "Gagal terhubung ke server: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    private fun navigateAfterReset() {
+        if (fromChangePassword) {
+            // User masih login -> balik ke Settings
+            val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("OPEN_SETTINGS", true)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        } else {
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        }
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        btnSave.isEnabled = !isLoading
+        btnSave.text = if (isLoading) "Please wait..." else defaultBtnText
     }
 
     private fun validatePasswords(new: String, confirm: String): Boolean {

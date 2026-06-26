@@ -26,8 +26,8 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var tvForgotPassword: TextView
     private lateinit var tvSignUp: TextView
 
-    // Variabel pelindung internet yang kelupaan
     private var isConnected = true
+    private var defaultBtnText: CharSequence = "Login"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +45,8 @@ class LoginActivity : AppCompatActivity() {
         btnLogin = findViewById(R.id.btnLogin)
         tvForgotPassword = findViewById(R.id.tvForgotPassword)
         tvSignUp = findViewById(R.id.tvSignUp)
+
+        defaultBtnText = btnLogin.text
     }
 
     private fun setupClickListeners() {
@@ -75,9 +77,7 @@ class LoginActivity : AppCompatActivity() {
             val password = etPassword.text.toString().trim()
 
             if (validateInput(email, password)) {
-                // 🚧 API dinonaktifkan sementara — langsung masuk
-                Toast.makeText(this@LoginActivity, "Login successful!", Toast.LENGTH_SHORT).show()
-                goToMain()
+                loginToServer(email, password)
             }
         }
 
@@ -97,6 +97,36 @@ class LoginActivity : AppCompatActivity() {
             }
             finish()
         }
+    }
+
+    // 🔗 PANGGIL API LOGIN
+    private fun loginToServer(email: String, password: String) {
+        setLoading(true)
+        lifecycleScope.launch {
+            try {
+                val response = ApiConfig.getApiService().login(LoginRequest(email, password))
+                if (response.status == "success") {
+                    Toast.makeText(this@LoginActivity, response.message, Toast.LENGTH_SHORT).show()
+                    goToMain()
+                } else {
+                    // contoh: "Email atau Password salah!" / "Akun belum diverifikasi"
+                    Toast.makeText(this@LoginActivity, response.message, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@LoginActivity,
+                    "Gagal terhubung ke server: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            } finally {
+                setLoading(false)
+            }
+        }
+    }
+
+    private fun setLoading(isLoading: Boolean) {
+        btnLogin.isEnabled = !isLoading
+        btnLogin.text = if (isLoading) "Please wait..." else defaultBtnText
     }
 
     private fun validateInput(email: String, password: String): Boolean {
