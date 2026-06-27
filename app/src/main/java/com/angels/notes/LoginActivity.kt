@@ -99,7 +99,7 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    // 🔗 PANGGIL API LOGIN
+    // panggil api login
     private fun loginToServer(email: String, password: String) {
         setLoading(true)
         lifecycleScope.launch {

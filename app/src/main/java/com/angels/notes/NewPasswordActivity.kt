@@ -71,7 +71,7 @@ class NewPasswordActivity : AppCompatActivity() {
         findViewById<ImageButton>(R.id.btnBack).setOnClickListener { finish() }
     }
 
-    // 🔗 PANGGIL API RESET PASSWORD (email + otp + password baru)
+    // panggil api reset password
     private fun resetPasswordOnServer(newPassword: String) {
         setLoading(true)
         lifecycleScope.launch {
@@ -100,7 +100,7 @@ class NewPasswordActivity : AppCompatActivity() {
 
     private fun navigateAfterReset() {
         if (fromChangePassword) {
-            // User masih login -> balik ke Settings
+            // kalo user masih login, balik ke settings
             val intent = Intent(this, MainActivity::class.java)
             intent.putExtra("OPEN_SETTINGS", true)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

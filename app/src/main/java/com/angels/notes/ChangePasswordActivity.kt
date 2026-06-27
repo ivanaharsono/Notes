@@ -86,7 +86,7 @@ class ChangePasswordActivity : AppCompatActivity() {
         }
     }
 
-    // 🔗 PANGGIL API CHANGE PASSWORD (email sesi + password lama + password baru)
+    // panggil api change password
     private fun changePasswordOnServer(oldPassword: String, newPassword: String) {
         val sharedPref = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
         val email = sharedPref.getString("USER_EMAIL", "") ?: ""

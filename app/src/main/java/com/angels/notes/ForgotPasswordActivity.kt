@@ -52,7 +52,6 @@ class ForgotPasswordActivity : AppCompatActivity() {
         btnBack.setOnClickListener { finish() }
     }
 
-    // 🔗 PANGGIL API FORGOT PASSWORD -> backend kirim OTP -> buka OtpActivity (reset)
     private fun sendResetRequest(email: String) {
         setLoading(true)
         lifecycleScope.launch {

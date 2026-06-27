@@ -4,37 +4,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
     <ImageView
         android:id="@+id/ivOnboarding"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:scaleType="centerCrop"
+        android:layout_marginTop="80dp"
+        android:scaleType="fitCenter"
         app:layout_constraintHeight_percent="0.55"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:src="@drawable/img_onboard_idea" />
 
-    <View
-        android:layout_width="0dp"
-        android:layout_height="80dp"
-        android:background="@drawable/gradient_image_fade"
-        app:layout_constraintBottom_toBottomOf="@+id/ivOnboarding"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <LinearLayout
         android:id="@+id/linearLayout_text"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
         android:paddingHorizontal="32dp"
-        android:paddingTop="32dp"
+        android:paddingTop="16dp"
         android:paddingBottom="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ivOnboarding">
 
         <TextView
@@ -47,7 +39,6 @@
             android:textSize="32sp"
             android:textAlignment="center"
             android:minLines="2"
-            android:gravity="bottom"
             tools:text="Catch Every Thought" />
 
         <TextView

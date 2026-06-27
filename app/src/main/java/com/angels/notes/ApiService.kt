@@ -28,9 +28,7 @@ interface ApiService {
     suspend fun sendFeedback(@Body request: FeedbackRequest): MessageResponse
 }
 
-// =========================== REQUEST ===========================
-// @SerializedName dipakai kalau nama field di JSON beda dengan nama
-// variabel Kotlin. Backend butuh "full_name" (snake_case).
+// req
 data class SignupRequest(
     @SerializedName("full_name") val fullName: String,
     val email: String,
@@ -69,9 +67,7 @@ data class FeedbackRequest(
     val name: String? = null
 )
 
-// =========================== RESPONSE ===========================
-// Semua endpoint balikin format yang sama: { status, message }.
-// token disiapkan kalau nanti backend pakai JWT.
+// respon
 data class MessageResponse(
     val status: String,
     val message: String,

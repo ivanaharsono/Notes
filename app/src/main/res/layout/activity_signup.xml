@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    ScrollView diperlukan di Signup karena field-nya lebih banyak (4 field),
-    sehingga di layar kecil konten tidak ketimpa bottom row.
-    Tapi di dalam ScrollView hanya ada 1 ConstraintLayout — tidak ada nested layout.
--->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -217,7 +212,8 @@
             android:textSize="14sp"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="32dp"
-            app:layout_constraintTop_toBottomOf="@+id/btnSignUp"            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSignUp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/tvLogin"
             app:layout_constraintHorizontal_chainStyle="packed"

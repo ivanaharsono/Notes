@@ -18,7 +18,7 @@ class OtpActivity : AppCompatActivity() {
     private lateinit var btnVerify: MaterialButton
     private var email: String = ""
     private var fromChangePassword: Boolean = false
-    private var flow: String = "reset"   // "signup" atau "reset"
+    private var flow: String = "reset"
     private var defaultBtnText: CharSequence = "Verify"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +50,7 @@ class OtpActivity : AppCompatActivity() {
                 if (flow == "signup") {
                     verifySignupOtp(otp)
                 } else {
-                    // Alur reset: OTP divalidasi nanti di langkah reset-password,
+                    // OTP divalidasi nanti di langkah reset-password,
                     // jadi cukup teruskan kode-nya ke NewPasswordActivity.
                     goToNewPassword(otp)
                 }
@@ -63,7 +63,7 @@ class OtpActivity : AppCompatActivity() {
         otpBoxes.forEach { it.setTextColor(android.graphics.Color.BLACK) }
     }
 
-    // 🔗 ALUR SIGNUP: cek OTP ke backend, kalau benar -> akun aktif -> Login
+    // cek OTP ke backend, kalau benar, maka akun aktif, lalu login
     private fun verifySignupOtp(otp: String) {
         setLoading(true)
         lifecycleScope.launch {

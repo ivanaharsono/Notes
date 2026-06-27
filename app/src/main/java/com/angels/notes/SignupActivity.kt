@@ -119,7 +119,7 @@ class SignupActivity : AppCompatActivity() {
         }
     }
 
-    // 🔗 PANGGIL API SIGNUP -> backend kirim OTP ke email -> buka OtpActivity
+    // panggil api signup. backend kirim OTP ke email terus buka OtpActivity
     private fun signUpToServer(name: String, email: String, password: String) {
         setLoading(true)
         lifecycleScope.launch {
@@ -131,7 +131,7 @@ class SignupActivity : AppCompatActivity() {
                     Toast.makeText(this@SignupActivity, response.message, Toast.LENGTH_SHORT).show()
                     val intent = Intent(this@SignupActivity, OtpActivity::class.java)
                     intent.putExtra("EMAIL", email)
-                    intent.putExtra("FLOW", "signup")   // tandai ini alur pendaftaran
+                    intent.putExtra("FLOW", "signup")
                     startActivity(intent)
                 } else {
                     // contoh: "Email sudah terdaftar!"
